@@ -870,7 +870,7 @@ function renderSquads(){
     html+="<div class=\"squad-card\">";
     var sqLogo=getSquadLogo(sq.label);
     html+="<div class=\"squad-card-title\" style=\"color:"+sq.color+"\">"+
-      (sqLogo?"<img src=\""+sqLogo+"\" style=\"height:20px;vertical-align:middle;margin-right:6px\">":(sq.label==="Elite"?"🦉 ":"🌪️ ")+
+      (sqLogo?"<img src=\""+sqLogo+"\" style=\"height:20px;vertical-align:middle;margin-right:6px\">":(sq.label==="Elite"?"🦉 ":"🌪️ "))+
       "Squad "+sq.label+"</div>";
     html+="<div class=\"squad-stat-grid\">";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\" style=\"color:"+sq.color+"\">"+fmtBRL(avg(sq.d,"cxDia"))+"</div><div class=\"squad-stat-lbl\">Cx/Dia Médio</div></div>";
