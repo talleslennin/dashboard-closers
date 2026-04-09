@@ -957,9 +957,9 @@ function renderComparacao(){
       html+="</div>";
     });
     
+  html+="</div>";
   var sqCid="sqRadar_"+state.compPeriod;
   html+="<div class=\"chart-container\" style=\"max-width:550px;margin:24px auto\"><div class=\"chart-title\">📊 Comparativo Visual – Squads</div><canvas id=\""+sqCid+"\"></canvas></div>";
-html+="</div>";
   } else {
     var n1=state.compCloser1; var n2=state.compCloser2;
     if(!n1||!n2){ html="<div style=\"padding:24px;color:var(--text2)\">Selecione dois closers para comparar.</div>"; document.getElementById("comparacaoContainer").innerHTML=html; return; }
