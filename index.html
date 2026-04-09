@@ -228,11 +228,11 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 <script>
 // ===== FOTOS (preencher com URLs quando disponível) =====
 var FOTOS = {
-  "Bruno":"","Cibeli":"","David":"","Ester":"","Evandro":"","Fernanda":"",
-  "Leandro":"","Natalya":"","Lucas":"","Igor":"","Nayara":"","Wesley":"",
-  "Valmor":"","Gabriel":"","Flávia":"","Denise":"","Isabella":"","Denis":""
+  "Bruno":"https://drive.google.com/uc?export=view&id=1HaBnNWM4s-z-cvNW89ecCta947_3op7H","Cibeli":"https://drive.google.com/uc?export=view&id=1TbYW7VpfXxcluFpph8fKGvYl7Wn-b4jq","David":"https://drive.google.com/uc?export=view&id=1tO6c3_Qg3kEpArlcgGzk1yzGztXThuUp","Ester":"https://drive.google.com/uc?export=view&id=1ksURqqn-Q6cYxwofx7wC9YZOAONZBMIO","Evandro":"https://drive.google.com/uc?export=view&id=16I-NlrsGqQDnalr4kx8yYbzl3xKee2cK","Fernanda":"https://drive.google.com/uc?export=view&id=1ot_hTZv0xJdM3RhvHNQCoosuvB23i6gE",
+  "Leandro":"https://drive.google.com/uc?export=view&id=1CqU92e4MRGNsFhqmuPmcoSED4R0aeXU8","Natalya":"https://drive.google.com/uc?export=view&id=12MuEvopPnPdajpGUcgJlvKaz6JNDZp4o","Lucas":"https://drive.google.com/uc?export=view&id=1YRx5jCqTZvn5nKTnMS4PbBlHZpc-h8pQ","Igor":"https://drive.google.com/uc?export=view&id=1907hsTVQxZxKLKWSv2Li4V8mFz6M8ZnZ","Nayara":"https://drive.google.com/uc?export=view&id=16EVYnRBlUHuEyV7zghdpSAirAjMuuwfs","Wesley":"https://drive.google.com/uc?export=view&id=155PynGnWVmTf9LQchEqo7dw5R5W5krKW",
+  "Valmor":"https://drive.google.com/uc?export=view&id=1VbhtYfo5lAulqTIDSouUtYhh4OEgcwyG","Gabriel":"https://drive.google.com/uc?export=view&id=1SpoX0eI8Y6mPFkSZ2cddNBjDyyzftNrL","Flávia":"https://drive.google.com/uc?export=view&id=1S_mYA4K1FwASjemXB61saFy-LgiTwGCj","Denise":"https://drive.google.com/uc?export=view&id=1YE_dWCR9ZiWo4gQrC95564SQeSVs4zuM","Isabella":"https://drive.google.com/uc?export=view&id=1RaWqAvJalPWOTy2IZ25NIK1QhBROozT7","Denis":"https://drive.google.com/uc?export=view&id=1ITe6Ikd6e1WGUnV_SRywC7PzSVZZeLpN"
 };
-var SQUAD_LOGOS = { "Elite":"", "Furação":"" };
+var SQUAD_LOGOS = { "Elite":"https://drive.google.com/uc?export=view&id=1FlcqsXW_o8b8Xo0PmfrAfhnGs5FJrnWb", "Furação":"https://drive.google.com/uc?export=view&id=1FlcqsXW_o8b8Xo0PmfrAfhnGs5FJrnWb" };
 function getPhoto(name){ return FOTOS[name]||""; }
 function getSquadLogo(squad){ return SQUAD_LOGOS[squad]||""; }
 function avatarHTML(name,size,bg){
@@ -821,7 +821,7 @@ function renderEvolucaoSquad(){
     {id:"sqVendas",title:"Vendas Total",fn:function(arr){return sum(arr,"vendas");},color:"#10b981",fmt:function(v){return Math.round(v);}},
     {id:"sqRBV",title:"RBV Total",fn:function(arr){return sum(arr,"rbv");},color:"#8b5cf6",fmt:fmtBRL},
     {id:"sqConv",title:"Conversão Média",fn:function(arr){return avg(arr,"conv");},color:"#f59e0b",fmt:fmtPct},
-    {id:"sqCC",title:"CC Médio",fn:function(arr){return avg(arr,"cc");},color:"#ec4899",fmt:fmtPct},
+    {id:"sqCC",title:"CC Real",fn:function(arr){var r=arr.reduce(function(s,d){return s+(d.rbv||0);},0);return r>0?arr.reduce(function(s,d){return s+(d.caixa||0);},0)/r*100:0;},color:"#ec4899",fmt:fmtPct},
     {id:"sqAgDia",title:"Ag/Dia Médio",fn:function(arr){return avg(arr,"agDia");},color:"#84cc16",fmt:fmtNum}
   ];
   var html="<div style=\"margin-bottom:16px;padding:12px;background:var(--s2);border-radius:8px\"><span style=\"font-size:15px;font-weight:700;color:"+sqColor+"\">Squad "+squad+"</span></div>";
@@ -870,14 +870,14 @@ function renderSquads(){
     html+="<div class=\"squad-card\">";
     var sqLogo=getSquadLogo(sq.label);
     html+="<div class=\"squad-card-title\" style=\"color:"+sq.color+"\">"+
-      (sqLogo?"<img src=\""+sqLogo+"\" style=\"height:20px;vertical-align:middle;margin-right:6px\">":"⚡ ")+
+      (sqLogo?"<img src=\""+sqLogo+"\" style=\"height:20px;vertical-align:middle;margin-right:6px\">":(sq.label==="Elite"?"🦉 ":"🌪️ ")+
       "Squad "+sq.label+"</div>";
     html+="<div class=\"squad-stat-grid\">";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\" style=\"color:"+sq.color+"\">"+fmtBRL(avg(sq.d,"cxDia"))+"</div><div class=\"squad-stat-lbl\">Cx/Dia Médio</div></div>";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+sum(sq.d,"vendas")+"</div><div class=\"squad-stat-lbl\">Vendas Total</div></div>";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtPct(avg(sq.d,"conv"))+"</div><div class=\"squad-stat-lbl\">Conv. Média</div></div>";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtBRL(sum(sq.d,"rbv"))+"</div><div class=\"squad-stat-lbl\">RBV Total</div></div>";
-    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtPct(avg(sq.d,"cc"))+"</div><div class=\"squad-stat-lbl\">CC Médio</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtPct(sum(sq.d,"rbv")>0?sum(sq.d,"caixa")/sum(sq.d,"rbv")*100:0)+"</div><div class=\"squad-stat-lbl\">CC Real</div></div>";
     html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtNum(avg(sq.d,"agDia"))+"</div><div class=\"squad-stat-lbl\">Ag/Dia Médio</div></div>";
     html+="</div><div class=\"closer-list\">";
     var sorted=sq.d.slice().sort(function(a,b){return (b[indic]||0)-(a[indic]||0);});
@@ -933,10 +933,11 @@ function renderComparacao(){
       {key:"rbv",label:"RBV Total",fmt:fmtBRL,avg:false},
       {key:"caixa",label:"Caixa Total",fmt:fmtBRL,avg:false},
       {key:"conv",label:"Conversão Média",fmt:fmtPct,avg:true},
-      {key:"cc",label:"CC Médio",fmt:fmtPct,avg:true},
+      {key:"ccReal",label:"CC Real",fmt:fmtPct,avg:false,calcFn:function(arr){var r=arr.reduce(function(s,d){return s+(d.rbv||0);},0);return r>0?arr.reduce(function(s,d){return s+(d.caixa||0);},0)/r*100:0;}},
       {key:"agDia",label:"Ag/Dia Médio",fmt:fmtNum,avg:true}
     ];
     function calcMetric(arr,m){
+      if(m.calcFn) return m.calcFn(arr);
       if(m.avg) return arr.reduce(function(s,d){return s+(d[m.key]||0);},0)/arr.length;
       return arr.reduce(function(s,d){return s+(d[m.key]||0);},0);
     }
@@ -945,7 +946,7 @@ function renderComparacao(){
       html+="<div class=\"comp-card\">";
       var sqLogo=getSquadLogo(sq.label);
       html+="<div class=\"comp-header\"><div class=\"comp-avatar\" style=\"background:"+sq.color+";color:#000;font-size:14px;font-weight:800\">"+(sqLogo?"<img src=\""+sqLogo+"\" style=\"width:100%;height:100%;object-fit:cover\">":sq.label.substring(0,1))+"</div>";
-      html+="<div><div class=\"comp-name\">Squad "+sq.label+"</div><div style=\"font-size:12px;color:var(--text2)\">"+sq.d.length+" membros</div></div></div>";
+      html+="<div><div class=\"comp-name\">"+(sq.label==="Elite"?"🦉":"🌪️")+" Squad "+sq.label+"</div><div style=\"font-size:12px;color:var(--text2)\">"+sq.d.length+" membros</div></div></div>";
       metrics.forEach(function(m){
         var valE=calcMetric(eD,m); var valF=calcMetric(fD,m);
         var myVal=(sq.label==="Elite")?valE:valF;
@@ -955,7 +956,10 @@ function renderComparacao(){
       });
       html+="</div>";
     });
-    html+="</div>";
+    
+  var sqCid="sqRadar_"+state.compPeriod;
+  html+="<div class=\"chart-container\" style=\"max-width:550px;margin:24px auto\"><div class=\"chart-title\">📊 Comparativo Visual – Squads</div><canvas id=\""+sqCid+"\"></canvas></div>";
+html+="</div>";
   } else {
     var n1=state.compCloser1; var n2=state.compCloser2;
     if(!n1||!n2){ html="<div style=\"padding:24px;color:var(--text2)\">Selecione dois closers para comparar.</div>"; document.getElementById("comparacaoContainer").innerHTML=html; return; }
@@ -1021,6 +1025,46 @@ function renderComparacao(){
         });
       }
     }
+  if(state.compType==="squads"){
+    var sqCidR="sqRadar_"+state.compPeriod;
+    var ctxSq=document.getElementById(sqCidR);
+    if(ctxSq){
+      if(state.charts[sqCidR]){try{state.charts[sqCidR].destroy();}catch(e){}}
+      var eD2=getSquadData(state.compPeriod==="trimestre"?"trimestre":state.compPeriod==="marco"?"mes_marco":state.compPeriod==="abril"?"mes_abril":"semana").filter(function(d){return d.squad==="Elite";});
+      var fD2=getSquadData(state.compPeriod==="trimestre"?"trimestre":state.compPeriod==="marco"?"mes_marco":state.compPeriod==="abril"?"mes_abril":"semana").filter(function(d){return d.squad==="Fu\u00e7\u00e3o";});
+      function sqSum(arr,k){return arr.reduce(function(s,d){return s+(d[k]||0);},0);}
+      function sqAvg(arr,k){return arr.length?sqSum(arr,k)/arr.length:0;}
+      function sqCCReal(arr){var r=sqSum(arr,"rbv");return r>0?sqSum(arr,"caixa")/r*100:0;}
+      var maxCxDia=Math.max(sqAvg(eD2,"cxDia"),sqAvg(fD2,"cxDia"))||1;
+      var maxVendas=Math.max(sqSum(eD2,"vendas"),sqSum(fD2,"vendas"))||1;
+      var maxRBV=Math.max(sqSum(eD2,"rbv"),sqSum(fD2,"rbv"))||1;
+      state.charts[sqCidR]=new Chart(ctxSq,{type:"radar",
+        data:{labels:["Ag/Dia","CC Real","Cx/Dia","Convers\u00e3o","Vendas","RBV"],
+          datasets:[
+            {label:"\uD83E\uDD89 Elite",data:[
+              Math.min(sqAvg(eD2,"agDia")/12*100,100),
+              Math.min(sqCCReal(eD2),100),
+              Math.min(sqAvg(eD2,"cxDia")/maxCxDia*100,100),
+              Math.min(sqAvg(eD2,"conv")/40*100,100),
+              Math.min(sqSum(eD2,"vendas")/maxVendas*100,100),
+              Math.min(sqSum(eD2,"rbv")/maxRBV*100,100)
+            ],backgroundColor:"rgba(129,140,248,0.2)",borderColor:"#818cf8",borderWidth:2,pointBackgroundColor:"#818cf8"},
+            {label:"\uD83C\uDF2A\uFE0F Fura\u00e7\u00e3o",data:[
+              Math.min(sqAvg(fD2,"agDia")/12*100,100),
+              Math.min(sqCCReal(fD2),100),
+              Math.min(sqAvg(fD2,"cxDia")/maxCxDia*100,100),
+              Math.min(sqAvg(fD2,"conv")/40*100,100),
+              Math.min(sqSum(fD2,"vendas")/maxVendas*100,100),
+              Math.min(sqSum(fD2,"rbv")/maxRBV*100,100)
+            ],backgroundColor:"rgba(52,211,153,0.2)",borderColor:"#34d399",borderWidth:2,pointBackgroundColor:"#34d399"}
+          ]},
+        options:{responsive:true,
+          scales:{r:{ticks:{color:"#94a3b8",backdropColor:"transparent"},grid:{color:"#374151"},angleLines:{color:"#374151"},pointLabels:{color:"#e2e8f0",font:{size:13}}}},
+          plugins:{legend:{labels:{color:"#e2e8f0"}}}
+        }
+      });
+    }
+  }
   }
 }
 </script>
