@@ -75,6 +75,12 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .rank-stat-val{font-size:14px;font-weight:700}
 .rank-stat-lbl{font-size:10px;color:var(--text2)}
 .score-badge{background:linear-gradient(135deg,var(--blue),var(--elite-c));border-radius:8px;padding:4px 12px;font-size:16px;font-weight:800;color:#fff;min-width:48px;text-align:center}
+.score-info-btn{background:rgba(59,130,246,.15);border:1px solid rgba(59,130,246,.3);border-radius:50%;width:18px;height:18px;font-size:11px;font-weight:700;color:var(--blue);cursor:pointer;display:inline-flex;align-items:center;justify-content:center;margin-left:6px;vertical-align:middle;position:relative}
+.score-tooltip{position:absolute;left:50%;transform:translateX(-50%);bottom:calc(100% + 8px);background:#1e293b;border:1px solid var(--s3);border-radius:10px;padding:12px 16px;min-width:220px;z-index:200;display:none;text-align:left;box-shadow:0 8px 24px rgba(0,0,0,0.5)}
+.score-tooltip.visible{display:block}
+.score-tooltip-title{font-size:12px;font-weight:700;color:var(--text);margin-bottom:8px}
+.score-tooltip-row{display:flex;justify-content:space-between;font-size:12px;color:var(--text2);margin-bottom:4px}
+.score-tooltip-row span:last-child{color:var(--blue);font-weight:700}
 .tab-content{display:none}
 .tab-content.active{display:block}
 .chart-container{background:var(--surface);border:1px solid var(--s3);border-radius:12px;padding:20px;margin-bottom:20px}
@@ -108,11 +114,23 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 .closer-item-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px}
 .closer-item-name{flex:1;font-size:13px;font-weight:500}
 .closer-item-val{font-size:13px;font-weight:700}
-@media(max-width:768px){.squads-grid{grid-template-columns:1fr}.rank-stats{gap:12px}.filters{gap:8px}}
+/* Comparison styles */
+.comp-container{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.comp-card{background:var(--surface);border:1px solid var(--s3);border-radius:12px;padding:20px}
+.comp-header{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid var(--s3)}
+.comp-avatar{width:52px;height:52px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:20px}
+.comp-name{font-size:17px;font-weight:700}
+.comp-stat-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid rgba(255,255,255,.05)}
+.comp-stat-label{font-size:13px;color:var(--text2)}
+.comp-stat-val{font-size:14px;font-weight:700}
+.comp-winner{color:var(--green)}
+.comp-loser{color:var(--text2)}
+.comp-equal{color:var(--text)}
+.comp-chart-wrap{margin-top:20px}
+@media(max-width:768px){.squads-grid{grid-template-columns:1fr}.rank-stats{gap:12px}.filters{gap:8px}.comp-container{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
-<!-- LOGIN -->
 <div class="login-screen" id="loginScreen">
 <div class="login-card">
 <div class="login-logo">🏆</div>
@@ -123,10 +141,7 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 <input type="password" id="loginPass" class="login-input" placeholder="Senha">
 <button class="login-btn" id="loginBtn">Entrar</button>
 <div class="login-err" id="loginErr">Usuário ou senha inválidos</div>
-</div>
-</div>
-</div>
-<!-- APP -->
+</div></div></div>
 <div class="app" id="app">
 <div class="header">
 <div class="header-brand"><div class="header-logo">📊</div><span>Performance Dashboard</span></div>
@@ -134,48 +149,68 @@ body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,san
 <button class="lock-btn" id="lockBtn" style="display:none">🔒 Ranking Trim. Bloqueado</button>
 <div class="user-badge"><div class="user-avatar" id="userAvatar"></div><div class="user-info"><div class="user-name" id="userName"></div><div class="user-role" id="userRole"></div></div></div>
 <button class="logout-btn" id="logoutBtn">Sair</button>
-</div>
-</div>
+</div></div>
 <div class="nav-tabs" id="navTabs">
 <div class="nav-tab active" data-tab="ranking">🏆 Ranking</div>
 <div class="nav-tab" data-tab="evolucao">📈 Evolução</div>
 <div class="nav-tab" data-tab="squads">⚡ Squads</div>
+<div class="nav-tab" data-tab="comparar" id="tabComparar">📊 Comparar</div>
 <div class="nav-tab" data-tab="premios">🥇 Premiações</div>
 </div>
 <div class="content">
-<!-- RANKING TAB -->
 <div class="tab-content active" id="tab-ranking">
 <div class="filters" id="rankFilters">
 <div class="filter-group"><div class="filter-label">Período</div><select class="filter-select" id="periodSel"><option value="semana">Semana</option><option value="mes">Mês</option><option value="trimestre">Trimestre</option></select></div>
-<div class="filter-group" id="mesSel_wrap"><div class="filter-label">Mês</div><select class="filter-select" id="mesSel"><option value="abril">Abril</option><option value="marco">Março</option></select></div>
-<div class="filter-group"><div class="filter-label">Ordenar por</div><select class="filter-select" id="sortSel"><option value="score">Score</option><option value="vendas">Vendas</option><option value="rbv">RBV</option><option value="caixa">Caixa</option><option value="cxDia">Caixa/Dia Útil</option><option value="conv">Conversão %</option><option value="cc">Cash Collect %</option><option value="agDia">Agendas/Dia</option><option value="metaPct">% Meta Atingida</option></select></div>
+<div class="filter-group" id="mesSel_wrap" style="display:none"><div class="filter-label">Mês</div><select class="filter-select" id="mesSel"><option value="abril">Abril</option><option value="marco">Março</option></select></div>
+<div class="filter-group" style="position:relative">
+<div class="filter-label" style="display:flex;align-items:center;gap:4px">Ordenar por
+<span class="score-info-btn" id="scoreInfoBtn" title="Como o Score é calculado">?</span>
+<div class="score-tooltip" id="scoreTooltip">
+<div class="score-tooltip-title">Cálculo do Score</div>
+<div class="score-tooltip-row"><span>Agendas/Dia</span><span>25%</span></div>
+<div class="score-tooltip-row"><span>% Meta RBV</span><span>25%</span></div>
+<div class="score-tooltip-row"><span>Caixa/Dia Útil</span><span>20%</span></div>
+<div class="score-tooltip-row"><span>Conversão %</span><span>20%</span></div>
+<div class="score-tooltip-row"><span>Cash Collect %</span><span>10%</span></div>
+</div>
+</div>
+<select class="filter-select" id="sortSel"><option value="score">Score</option><option value="vendas">Vendas</option><option value="rbv">RBV</option><option value="caixa">Caixa</option><option value="cxDia">Caixa/Dia Útil</option><option value="conv">Conversão %</option><option value="cc">Cash Collect %</option><option value="agDia">Agendas/Dia</option><option value="metaPct">% Meta Atingida</option></select></div>
 <div class="filter-group"><div class="filter-label">Squad</div><select class="filter-select" id="squadSel"><option value="todos">Todos</option><option value="elite">Elite</option><option value="furacao">Furação</option></select></div>
 <div class="filter-group"><div class="filter-label">Top N</div><select class="filter-select" id="topSel"><option value="5">Top 5</option><option value="10">Top 10</option><option value="all">Todos</option></select></div>
 </div>
 <div id="rankingContainer"></div>
 </div>
-<!-- EVOLUCAO TAB -->
 <div class="tab-content" id="tab-evolucao">
 <div class="evol-filters">
 <div class="filter-group"><div class="filter-label">Closer</div><select class="evol-select" id="evolCloserSel"></select></div>
-<div class="filter-group"><div class="filter-label">Período</div><select class="evol-select" id="evolPeriodSel"><option value="mensal">Mensal</option><option value="trimestral">Trimestral</option></select></div>
+<div class="filter-group"><div class="filter-label">Período</div><select class="evol-select" id="evolPeriodSel"><option value="semanal">Semanal</option><option value="mensal">Mensal</option><option value="trimestral">Trimestral</option></select></div>
 </div>
 <div id="evolContainer"></div>
 </div>
-<!-- SQUADS TAB -->
 <div class="tab-content" id="tab-squads">
+<div class="filters" style="margin-bottom:20px">
+<div class="filter-group"><div class="filter-label">Período</div><select class="filter-select" id="squadPeriodSel"><option value="semana">Semana (Abril S1)</option><option value="mes_marco">Mês – Março</option><option value="mes_abril">Mês – Abril S1</option><option value="trimestre">Trimestre Jan-Mar</option></select></div>
+<div class="filter-group"><div class="filter-label">Indicador</div><select class="filter-select" id="squadIndicSel"><option value="cxDia">Caixa/Dia Útil</option><option value="vendas">Vendas</option><option value="rbv">RBV</option><option value="conv">Conversão %</option><option value="cc">Cash Collect %</option><option value="agDia">Agendas/Dia</option></select></div>
+</div>
 <div id="squadsContainer"></div>
 </div>
-<!-- PREMIOS TAB -->
+<div class="tab-content" id="tab-comparar">
+<div class="filters" style="margin-bottom:20px">
+<div class="filter-group"><div class="filter-label">Tipo</div><select class="filter-select" id="compTypeSel"><option value="closers">Closers</option><option value="squads">Squads</option></select></div>
+<div class="filter-group" id="compCloser1Wrap"><div class="filter-label">Closer A</div><select class="filter-select" id="compCloser1Sel"></select></div>
+<div class="filter-group" id="compCloser2Wrap"><div class="filter-label">Closer B</div><select class="filter-select" id="compCloser2Sel"></select></div>
+<div class="filter-group"><div class="filter-label">Período</div><select class="filter-select" id="compPeriodSel"><option value="semana">Semana</option><option value="marco">Mês – Março</option><option value="abril">Mês – Abril S1</option><option value="trimestre">Trimestre</option></select></div>
+</div>
+<div id="comparacaoContainer"></div>
+</div>
 <div class="tab-content" id="tab-premios">
 <div id="premiosContainer"></div>
 </div>
-</div>
-</div>
+</div></div>
 <script>
-// ==================== USERS ====================
 var USERS = [
   {code:"talles",name:"Talles",pass:"!4q!KgxMr",role:"head",squad:null},
+  {code:"victor",name:"Victor Ferreira",pass:"V!ct0rF3r",role:"head",squad:null},
   {code:"erick",name:"Erick Heslan",pass:"pXhtbVBde",role:"head",squad:null},
   {code:"max",name:"Max Barbosa",pass:"FXn4vv4fX",role:"head",squad:null},
   {code:"douglas",name:"Douglas Batista",pass:"h@TwafJdY",role:"head",squad:null},
@@ -198,33 +233,34 @@ var USERS = [
   {code:"flavia",name:"Flávia",pass:"HVGyrahaB",role:"closer",squad:"Furação"},
   {code:"denise",name:"Denise",pass:"5k8YtQKqM",role:"closer",squad:"Furação"}
 ];
-
-// ==================== METAS ====================
 var METAS = {
-  marco: {Wesley:96328,Flavia:96328,Nayara:124295,Denise:124295,Lucas:132581,Igor:124295,Valmor:74577,Gabriel:74577,Bruno:88560,Cibeli:96328,David:88560,Ester:96328,Evandro:96328,Fernanda:74577,Leandro:96328,Natalya:102750},
-  abril: {Wesley:116640,Flavia:116640,Nayara:116640,Denise:116640,Lucas:116640,Igor:116640,Valmor:90396,Gabriel:90396,Bruno:104976,Cibeli:116640,David:104976,Ester:116640,Fernanda:90396,Evandro:116640,Leandro:116640,Natalya:116640}
+  marco:{Wesley:96328,Flavia:96328,Nayara:124295,Denise:124295,Lucas:132581,Igor:124295,Valmor:74577,Gabriel:74577,Bruno:88560,Cibeli:96328,David:88560,Ester:96328,Evandro:96328,Fernanda:74577,Leandro:96328,Natalya:102750},
+  abril:{Wesley:116640,Flavia:116640,Nayara:116640,Denise:116640,Lucas:116640,Igor:116640,Valmor:90396,Gabriel:90396,Bruno:104976,Cibeli:116640,David:104976,Ester:116640,Fernanda:90396,Evandro:116640,Leandro:116640,Natalya:116640}
 };
-
-// ==================== DATA ====================
-var DATA_SEMANA = [
-  {name:"Bruno",squad:"Elite",agendas:21,diasUteis:4,agDia:5.25,vendas:2,conv:33.33,rbv:12313.70,caixa:12313.70,cc:100,cxDia:586.37},
-  {name:"Cibeli",squad:"Elite",agendas:24,diasUteis:4,agDia:6.00,vendas:2,conv:16.67,rbv:26211.60,caixa:26211.60,cc:100,cxDia:1092.15},
-  {name:"David",squad:"Elite",agendas:26,diasUteis:4,agDia:6.50,vendas:1,conv:7.69,rbv:7887.00,caixa:7887.00,cc:100,cxDia:303.35},
-  {name:"Ester",squad:"Elite",agendas:24,diasUteis:4,agDia:6.00,vendas:4,conv:30.77,rbv:18902.00,caixa:18902.00,cc:100,cxDia:787.58},
-  {name:"Evandro",squad:"Elite",agendas:28,diasUteis:4,agDia:7.00,vendas:3,conv:23.08,rbv:18888.98,caixa:18888.98,cc:100,cxDia:674.61},
-  {name:"Fernanda",squad:"Elite",agendas:31,diasUteis:4,agDia:7.75,vendas:4,conv:33.33,rbv:17625.00,caixa:17625.00,cc:100,cxDia:568.55},
-  {name:"Leandro",squad:"Elite",agendas:27,diasUteis:4,agDia:6.75,vendas:7,conv:53.85,rbv:34169.40,caixa:27652.00,cc:80.93,cxDia:1024.15},
-  {name:"Natalya",squad:"Elite",agendas:43,diasUteis:4,agDia:10.75,vendas:7,conv:29.17,rbv:45682.10,caixa:43218.00,cc:94.61,cxDia:1005.07},
-  {name:"Lucas",squad:"Furação",agendas:24,diasUteis:4,agDia:6.00,vendas:3,conv:25.00,rbv:12364.00,caixa:12064.00,cc:97.57,cxDia:502.67},
-  {name:"Igor",squad:"Furação",agendas:24,diasUteis:4,agDia:6.00,vendas:2,conv:18.18,rbv:12722.00,caixa:12058.00,cc:94.78,cxDia:502.42},
-  {name:"Nayara",squad:"Furação",agendas:23,diasUteis:4,agDia:5.75,vendas:2,conv:15.38,rbv:7900.00,caixa:5950.00,cc:75.32,cxDia:258.70},
-  {name:"Wesley",squad:"Furação",agendas:25,diasUteis:4,agDia:6.25,vendas:1,conv:11.11,rbv:3500.00,caixa:3500.00,cc:100,cxDia:140.00},
-  {name:"Valmor",squad:"Furação",agendas:31,diasUteis:4,agDia:7.75,vendas:0,conv:0,rbv:0,caixa:12430.00,cc:100,cxDia:400.97},
-  {name:"Gabriel",squad:"Furação",agendas:21,diasUteis:4,agDia:5.25,vendas:0,conv:0,rbv:0,caixa:0,cc:0,cxDia:0},
-  {name:"Flávia",squad:"Furação",agendas:26,diasUteis:4,agDia:6.50,vendas:1,conv:10.00,rbv:7109.40,caixa:7109.40,cc:100,cxDia:273.44},
-  {name:"Denise",squad:"Furação",agendas:25,diasUteis:4,agDia:6.25,vendas:2,conv:20.00,rbv:14625.00,caixa:14625.00,cc:100,cxDia:585.00}
+// Semanas históricas (são preenchidas quando lançadas na planilha)
+// semana: label, data (array closer), winner (melhor cxDia elegivel da semana)
+var DATA_SEMANAS_HIST = [
+  {label:"Abril S1 (02-08/Abr)",periodo:"abril_s1",data:[
+    {name:"Bruno",squad:"Elite",agendas:21,diasUteis:4,agDia:5.25,vendas:2,conv:33.33,rbv:12313.70,caixa:12313.70,cc:100,cxDia:586.37},
+    {name:"Cibeli",squad:"Elite",agendas:24,diasUteis:4,agDia:6.00,vendas:2,conv:16.67,rbv:26211.60,caixa:26211.60,cc:100,cxDia:1092.15},
+    {name:"David",squad:"Elite",agendas:26,diasUteis:4,agDia:6.50,vendas:1,conv:7.69,rbv:7887.00,caixa:7887.00,cc:100,cxDia:303.35},
+    {name:"Ester",squad:"Elite",agendas:24,diasUteis:4,agDia:6.00,vendas:4,conv:30.77,rbv:18902.00,caixa:18902.00,cc:100,cxDia:787.58},
+    {name:"Evandro",squad:"Elite",agendas:28,diasUteis:4,agDia:7.00,vendas:3,conv:23.08,rbv:18888.98,caixa:18888.98,cc:100,cxDia:674.61},
+    {name:"Fernanda",squad:"Elite",agendas:31,diasUteis:4,agDia:7.75,vendas:4,conv:33.33,rbv:17625.00,caixa:17625.00,cc:100,cxDia:568.55},
+    {name:"Leandro",squad:"Elite",agendas:27,diasUteis:4,agDia:6.75,vendas:7,conv:53.85,rbv:34169.40,caixa:27652.00,cc:80.93,cxDia:1024.15},
+    {name:"Natalya",squad:"Elite",agendas:43,diasUteis:4,agDia:10.75,vendas:7,conv:29.17,rbv:45682.10,caixa:43218.00,cc:94.61,cxDia:1005.07},
+    {name:"Lucas",squad:"Furação",agendas:24,diasUteis:4,agDia:6.00,vendas:3,conv:25.00,rbv:12364.00,caixa:12064.00,cc:97.57,cxDia:502.67},
+    {name:"Igor",squad:"Furação",agendas:24,diasUteis:4,agDia:6.00,vendas:2,conv:18.18,rbv:12722.00,caixa:12058.00,cc:94.78,cxDia:502.42},
+    {name:"Nayara",squad:"Furação",agendas:23,diasUteis:4,agDia:5.75,vendas:2,conv:15.38,rbv:7900.00,caixa:5950.00,cc:75.32,cxDia:258.70},
+    {name:"Wesley",squad:"Furação",agendas:25,diasUteis:4,agDia:6.25,vendas:1,conv:11.11,rbv:3500.00,caixa:3500.00,cc:100,cxDia:140.00},
+    {name:"Valmor",squad:"Furação",agendas:31,diasUteis:4,agDia:7.75,vendas:0,conv:0,rbv:0,caixa:12430.00,cc:100,cxDia:400.97},
+    {name:"Gabriel",squad:"Furação",agendas:21,diasUteis:4,agDia:5.25,vendas:0,conv:0,rbv:0,caixa:0,cc:0,cxDia:0},
+    {name:"Flávia",squad:"Furação",agendas:26,diasUteis:4,agDia:6.50,vendas:1,conv:10.00,rbv:7109.40,caixa:7109.40,cc:100,cxDia:273.44},
+    {name:"Denise",squad:"Furação",agendas:25,diasUteis:4,agDia:6.25,vendas:2,conv:20.00,rbv:14625.00,caixa:14625.00,cc:100,cxDia:585.00}
+  ]}
+  // Semanas anteriores serão adicionadas aqui quando lançadas na planilha
 ];
-
+var DATA_SEMANA = DATA_SEMANAS_HIST[0].data;
 var DATA_MES = {
   abril: DATA_SEMANA,
   marco: [
@@ -246,7 +282,6 @@ var DATA_MES = {
     {name:"Denise",squad:"Furação",agendas:143,diasUteis:22,agDia:6.5,vendas:15,conv:26.79,rbv:93061.00,caixa:80344.60,cc:86.34,cxDia:3652.03,mes:"marco"}
   ]
 };
-
 var DATA_TRIMESTRE = [
   {name:"Natalya",squad:"Elite",agendas:421,diasUteis:42,agDia:10.02,vendas:52,conv:26.13,rbv:404142.10,caixa:387838.30,cc:95.97,cxDia:9234.25},
   {name:"Fernanda",squad:"Elite",agendas:216,diasUteis:26,agDia:8.31,vendas:22,conv:25.00,rbv:157824.30,caixa:154060.30,cc:97.62,cxDia:5925.40},
@@ -265,484 +300,605 @@ var DATA_TRIMESTRE = [
   {name:"Cibeli",squad:"Elite",agendas:274,diasUteis:45,agDia:6.09,vendas:21,conv:16.94,rbv:129528.55,caixa:125287.39,cc:96.73,cxDia:2784.16},
   {name:"Gabriel",squad:"Furação",agendas:167,diasUteis:32,agDia:5.22,vendas:8,conv:11.11,rbv:55888.00,caixa:27707.20,cc:49.58,cxDia:865.85}
 ];
-
-// ==================== STATE ====================
 var state = {
-  user: null,
-  period: "semana",
-  mes: "abril",
-  sort: "score",
-  squad: "todos",
-  top: 5,
-  trimestreUnlocked: false,
-  charts: {},
-  evolPeriod: "mensal",
-  evolCloser: null
+  user:null,period:"semana",mes:"abril",sort:"score",squad:"todos",top:5,
+  trimestreUnlocked:false,charts:{},evolPeriod:"semanal",evolCloser:null,
+  squadPeriod:"trimestre",squadIndic:"cxDia",
+  compType:"closers",compCloser1:null,compCloser2:null,compPeriod:"trimestre"
 };
-
-// ==================== UTILS ====================
-function fmtBRL(v){ return "R$ " + v.toFixed(2).replace(".",",").replace(/B(?=(d{3})+(?!d))/g,"."); }
-function fmtPct(v){ return v.toFixed(1) + "%"; }
+function fmtBRL(v){ return "R$ "+v.toFixed(2).replace(".",",").replace(/\B(?=(\d{3})+(?!\d))/g,"."); }
+function fmtPct(v){ return v.toFixed(1)+"%"; }
 function fmtNum(v){ return v.toFixed(1); }
-function getInitials(name){ return name.split(" ").map(function(w){return w[0];}).join("").substring(0,2).toUpperCase(); }
-function getSquadColor(squad){ return squad === "Elite" ? "var(--elite-c)" : "var(--fur-c)"; }
-function getSquadClass(squad){ return squad === "Elite" ? "elite" : "furacao"; }
-function getAvatarBg(name){
-  var colors = ["#3b82f6","#8b5cf6","#ec4899","#f59e0b","#10b981","#06b6d4","#ef4444","#84cc16"];
-  var h = 0; for(var i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) & 0xFFFFFF;
-  return colors[Math.abs(h) % colors.length];
+function fmtIndicVal(v,key){
+  if(key==="cxDia"||key==="rbv"||key==="caixa") return fmtBRL(v);
+  if(key==="conv"||key==="cc") return fmtPct(v);
+  if(key==="agDia") return fmtNum(v);
+  return String(v);
 }
-function getMetaPct(d, period, mes){
-  if(period === "trimestre") return 0;
-  var mKey = (period === "semana") ? "abril" : mes;
-  var mObj = METAS[mKey];
-  if(!mObj) return 0;
-  var nm = d.name === "Flávia" ? "Flavia" : d.name;
-  var meta = mObj[nm];
-  if(!meta || meta === 0) return 0;
-  if(period === "semana"){
-    var diasTot = 20;
-    var metaSemana = meta * (d.diasUteis / diasTot);
-    return d.rbv / metaSemana * 100;
-  }
-  return d.rbv / meta * 100;
+function indicLabel(key){
+  var m={cxDia:"Caixa/Dia Útil",vendas:"Vendas",rbv:"RBV",conv:"Conversão %",cc:"Cash Collect %",agDia:"Agendas/Dia"};
+  return m[key]||key;
 }
-function calcScore(d, period, mes){
-  var agDiaMax = 12; var cxDiaMax = 10000;
-  var agDiaScore = Math.min(d.agDia / agDiaMax * 100, 100);
+function getInitials(n){ return n.split(" ").map(function(w){return w[0];}).join("").substring(0,2).toUpperCase(); }
+function getSquadColor(s){ return s==="Elite"?"var(--elite-c)":"var(--fur-c)"; }
+function getSquadClass(s){ return s==="Elite"?"elite":"furacao"; }
+function getAvatarBg(n){
+  var c=["#3b82f6","#8b5cf6","#ec4899","#f59e0b","#10b981","#06b6d4","#ef4444","#84cc16"];
+  var h=0; for(var i=0;i<n.length;i++) h=(h*31+n.charCodeAt(i))&0xFFFFFF;
+  return c[Math.abs(h)%c.length];
+}
+function getMetaPct(d,period,mes){
+  if(period==="trimestre") return 0;
+  var mKey=(period==="semana")?"abril":mes;
+  var mObj=METAS[mKey]; if(!mObj) return 0;
+  var nm=d.name==="Flávia"?"Flavia":d.name;
+  var meta=mObj[nm]; if(!meta||meta===0) return 0;
+  if(period==="semana"){ return d.rbv/(meta*(d.diasUteis/20))*100; }
+  return d.rbv/meta*100;
+}
+function calcScore(d,period,mes){
+  var agS=Math.min(d.agDia/12*100,100);
   var metaPct;
-  if(period === "trimestre"){
-    var mKey = "marco";
-    var mObj = METAS[mKey];
-    var nm2 = d.name === "Flávia" ? "Flavia" : d.name;
-    metaPct = mObj && mObj[nm2] ? Math.min(d.rbv / mObj[nm2] * 100, 200) : 0;
-  } else {
-    metaPct = Math.min(getMetaPct(d, period, mes), 200);
-  }
-  var metaScore = metaPct / 2;
-  var cxDiaScore = Math.min(d.cxDia / cxDiaMax * 100, 100);
-  var convScore = Math.min(d.conv / 40 * 100, 100);
-  var ccScore = Math.min(d.cc, 100);
-  return Math.round(agDiaScore * 0.25 + metaScore * 0.25 + cxDiaScore * 0.20 + convScore * 0.20 + ccScore * 0.10);
+  if(period==="trimestre"){
+    var m2=METAS.marco; var nm2=d.name==="Flávia"?"Flavia":d.name;
+    metaPct=m2&&m2[nm2]?Math.min(d.rbv/m2[nm2]*100,200):0;
+  } else { metaPct=Math.min(getMetaPct(d,period,mes),200); }
+  return Math.round(agS*0.25+(metaPct/2)*0.25+Math.min(d.cxDia/10000*100,100)*0.20+Math.min(d.conv/40*100,100)*0.20+Math.min(d.cc,100)*0.10);
 }
-
-// ==================== AUTH ====================
-function doLogin(){
-  var u = document.getElementById("loginUser").value.trim().toLowerCase();
-  var p = document.getElementById("loginPass").value;
-  var found = null;
-  for(var i=0;i<USERS.length;i++){ if(USERS[i].code === u && USERS[i].pass === p){ found = USERS[i]; break; } }
-  if(!found){ document.getElementById("loginErr").style.display = "block"; return; }
-  state.user = found;
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("app").style.display = "flex";
-  document.getElementById("userName").textContent = found.name;
-  document.getElementById("userRole").textContent = found.role === "head" ? "HEAD COMERCIAL" : found.role === "supervisor" ? "SUPERVISOR" : "CLOSER";
-  var av = document.getElementById("userAvatar");
-  av.textContent = getInitials(found.name);
-  av.style.background = "linear-gradient(135deg," + getAvatarBg(found.name) + ",#8b5cf6)";
-  if(found.role === "head"){ document.getElementById("lockBtn").style.display = "flex"; }
-  if(found.role === "closer"){
-    document.querySelectorAll(".nav-tab").forEach(function(t){ if(t.getAttribute("data-tab") === "squads" || t.getAttribute("data-tab") === "premios") t.style.display = "none"; });
-  }
-  populateEvolCloserSel();
-  renderRanking();
-}
-
-// ==================== NAV ====================
-document.addEventListener("DOMContentLoaded", function(){
-  document.getElementById("loginBtn").addEventListener("click", doLogin);
-  document.getElementById("loginPass").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
-  document.getElementById("loginUser").addEventListener("keydown", function(e){ if(e.key==="Enter") doLogin(); });
-  document.getElementById("logoutBtn").addEventListener("click", function(){
-    state.user = null;
-    document.getElementById("app").style.display = "none";
-    document.getElementById("loginScreen").style.display = "flex";
-    document.getElementById("loginUser").value = "";
-    document.getElementById("loginPass").value = "";
-    document.getElementById("loginErr").style.display = "none";
-    document.querySelectorAll(".nav-tab").forEach(function(t){ t.style.display = ""; });
-  });
-  document.getElementById("lockBtn").addEventListener("click", function(){
-    state.trimestreUnlocked = !state.trimestreUnlocked;
-    var btn = document.getElementById("lockBtn");
-    if(state.trimestreUnlocked){ btn.textContent = "🔓 Ranking Trim. Desbloqueado"; btn.classList.add("unlocked"); }
-    else { btn.textContent = "🔒 Ranking Trim. Bloqueado"; btn.classList.remove("unlocked"); }
-    if(state.period === "trimestre") renderRanking();
-    renderPremios();
-  });
-  document.getElementById("periodSel").addEventListener("change", function(){
-    state.period = this.value;
-    document.getElementById("mesSel_wrap").style.display = this.value === "mes" ? "" : "none";
-    renderRanking();
-  });
-  document.getElementById("mesSel").addEventListener("change", function(){
-    state.mes = this.value;
-    renderRanking();
-  });
-  document.getElementById("sortSel").addEventListener("change", function(){
-    state.sort = this.value;
-    renderRanking();
-  });
-  document.getElementById("squadSel").addEventListener("change", function(){
-    state.squad = this.value;
-    renderRanking();
-  });
-  document.getElementById("topSel").addEventListener("change", function(){
-    state.top = this.value === "all" ? 9999 : parseInt(this.value);
-    renderRanking();
-  });
-  document.getElementById("evolCloserSel").addEventListener("change", function(){
-    state.evolCloser = this.value;
-    renderEvolucao();
-  });
-  document.getElementById("evolPeriodSel").addEventListener("change", function(){
-    state.evolPeriod = this.value;
-    renderEvolucao();
-  });
-  document.getElementById("mesSel_wrap").style.display = "none";
-  document.querySelectorAll(".nav-tab").forEach(function(tab){
-    tab.addEventListener("click", function(){
-      var t = this.getAttribute("data-tab");
-      document.querySelectorAll(".nav-tab").forEach(function(x){ x.classList.remove("active"); });
-      document.querySelectorAll(".tab-content").forEach(function(x){ x.classList.remove("active"); });
-      this.classList.add("active");
-      document.getElementById("tab-"+t).classList.add("active");
-      if(t === "squads") renderSquads();
-      if(t === "premios") renderPremios();
-      if(t === "evolucao") renderEvolucao();
-    });
-  });
-  document.addEventListener("click", function(e){
-    var el = e.target.closest("[data-closer]");
-    if(el){
-      var closerName = el.getAttribute("data-closer");
-      showCloserEvol(closerName);
-    }
-  });
-});
-
-function populateEvolCloserSel(){
-  var sel = document.getElementById("evolCloserSel");
-  sel.innerHTML = "";
-  var names = DATA_TRIMESTRE.map(function(d){ return d.name; });
-  if(state.user && state.user.role === "closer"){
-    names = names.filter(function(n){ return n === state.user.name; });
-  } else if(state.user && state.user.role === "supervisor"){
-    names = names.filter(function(n){
-      var u = USERS.find(function(u){ return u.name === n; });
-      return u && u.squad === state.user.squad;
-    });
-  }
-  names.forEach(function(n){
-    var opt = document.createElement("option");
-    opt.value = n; opt.textContent = n;
-    sel.appendChild(opt);
-  });
-  state.evolCloser = names[0] || null;
-}
-
-function showCloserEvol(name){
-  state.evolCloser = name;
-  document.querySelectorAll(".nav-tab").forEach(function(x){ x.classList.remove("active"); });
-  document.querySelectorAll(".tab-content").forEach(function(x){ x.classList.remove("active"); });
-  document.querySelector(".nav-tab[data-tab=evolucao]").classList.add("active");
-  document.getElementById("tab-evolucao").classList.add("active");
-  var sel = document.getElementById("evolCloserSel");
-  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value === name){ sel.selectedIndex = i; break; } }
-  renderEvolucao();
-}
-
-// ==================== RANKING ====================
-function getData(){
-  if(state.period === "semana") return DATA_SEMANA;
-  if(state.period === "mes") return DATA_MES[state.mes] || DATA_MES.marco;
+function getSquadData(key){
+  if(key==="semana") return DATA_SEMANA;
+  if(key==="mes_marco") return DATA_MES.marco;
+  if(key==="mes_abril") return DATA_MES.abril;
   return DATA_TRIMESTRE;
 }
-
-function getSortVal(d){
-  var s = state.sort;
-  if(s === "score") return calcScore(d, state.period, state.mes);
-  if(s === "vendas") return d.vendas;
-  if(s === "rbv") return d.rbv;
-  if(s === "caixa") return d.caixa;
-  if(s === "cxDia") return d.cxDia;
-  if(s === "conv") return d.conv;
-  if(s === "cc") return d.cc;
-  if(s === "agDia") return d.agDia;
-  if(s === "metaPct") return getMetaPct(d, state.period, state.mes);
-  return 0;
+// ===== AUTH =====
+function doLogin(){
+  var u=document.getElementById("loginUser").value.trim().toLowerCase();
+  var p=document.getElementById("loginPass").value;
+  var found=null;
+  for(var i=0;i<USERS.length;i++){ if(USERS[i].code===u&&USERS[i].pass===p){found=USERS[i];break;} }
+  if(!found){ document.getElementById("loginErr").style.display="block"; return; }
+  state.user=found;
+  document.getElementById("loginScreen").style.display="none";
+  document.getElementById("app").style.display="flex";
+  document.getElementById("userName").textContent=found.name;
+  document.getElementById("userRole").textContent=found.role==="head"?"GERENTE COMERCIAL":found.role==="supervisor"?"SUPERVISOR":"CLOSER";
+  var av=document.getElementById("userAvatar");
+  av.textContent=getInitials(found.name);
+  av.style.background="linear-gradient(135deg,"+getAvatarBg(found.name)+",#8b5cf6)";
+  if(found.role==="head"){ document.getElementById("lockBtn").style.display="flex"; }
+  if(found.role==="closer"){
+    document.querySelectorAll(".nav-tab").forEach(function(t){
+      var tab=t.getAttribute("data-tab");
+      if(tab==="squads"||tab==="premios"||tab==="comparar") t.style.display="none";
+    });
+  }
+  if(found.role==="supervisor"){
+    document.querySelectorAll(".nav-tab").forEach(function(t){
+      if(t.getAttribute("data-tab")==="premios") t.style.display="none";
+    });
+  }
+  populateEvolCloserSel();
+  populateCompSelects();
+  renderRanking();
 }
-
-function fmtVal(d){
-  var s = state.sort;
-  if(s === "score") return calcScore(d, state.period, state.mes) + " pts";
-  if(s === "vendas") return d.vendas + " vendas";
-  if(s === "rbv") return fmtBRL(d.rbv);
-  if(s === "caixa") return fmtBRL(d.caixa);
-  if(s === "cxDia") return fmtBRL(d.cxDia) + "/dia";
-  if(s === "conv") return fmtPct(d.conv);
-  if(s === "cc") return fmtPct(d.cc);
-  if(s === "agDia") return fmtNum(d.agDia) + "/dia";
-  if(s === "metaPct") return fmtPct(getMetaPct(d, state.period, state.mes));
+// ===== NAV =====
+document.addEventListener("DOMContentLoaded",function(){
+  document.getElementById("loginBtn").addEventListener("click",doLogin);
+  document.getElementById("loginPass").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+  document.getElementById("loginUser").addEventListener("keydown",function(e){if(e.key==="Enter")doLogin();});
+  document.getElementById("logoutBtn").addEventListener("click",function(){
+    state.user=null;
+    document.getElementById("app").style.display="none";
+    document.getElementById("loginScreen").style.display="flex";
+    document.getElementById("loginUser").value="";
+    document.getElementById("loginPass").value="";
+    document.getElementById("loginErr").style.display="none";
+    document.querySelectorAll(".nav-tab").forEach(function(t){t.style.display="";});
+  });
+  document.getElementById("lockBtn").addEventListener("click",function(){
+    state.trimestreUnlocked=!state.trimestreUnlocked;
+    var btn=document.getElementById("lockBtn");
+    if(state.trimestreUnlocked){btn.textContent="🔓 Ranking Trim. Desbloqueado";btn.classList.add("unlocked");}
+    else{btn.textContent="🔒 Ranking Trim. Bloqueado";btn.classList.remove("unlocked");}
+    if(state.period==="trimestre") renderRanking();
+    renderPremios();
+  });
+  document.getElementById("periodSel").addEventListener("change",function(){
+    state.period=this.value;
+    document.getElementById("mesSel_wrap").style.display=this.value==="mes"?"":"none";
+    renderRanking();
+  });
+  document.getElementById("mesSel").addEventListener("change",function(){ state.mes=this.value; renderRanking(); });
+  document.getElementById("sortSel").addEventListener("change",function(){ state.sort=this.value; renderRanking(); });
+  document.getElementById("squadSel").addEventListener("change",function(){ state.squad=this.value; renderRanking(); });
+  document.getElementById("topSel").addEventListener("change",function(){ state.top=this.value==="all"?9999:parseInt(this.value); renderRanking(); });
+  document.getElementById("evolCloserSel").addEventListener("change",function(){ state.evolCloser=this.value; renderEvolucao(); });
+  document.getElementById("evolPeriodSel").addEventListener("change",function(){ state.evolPeriod=this.value; renderEvolucao(); });
+  document.getElementById("squadPeriodSel").addEventListener("change",function(){ state.squadPeriod=this.value; renderSquads(); });
+  document.getElementById("squadIndicSel").addEventListener("change",function(){ state.squadIndic=this.value; renderSquads(); });
+  document.getElementById("compTypeSel").addEventListener("change",function(){ state.compType=this.value; toggleCompUI(); renderComparacao(); });
+  document.getElementById("compCloser1Sel").addEventListener("change",function(){ state.compCloser1=this.value; renderComparacao(); });
+  document.getElementById("compCloser2Sel").addEventListener("change",function(){ state.compCloser2=this.value; renderComparacao(); });
+  document.getElementById("compPeriodSel").addEventListener("change",function(){ state.compPeriod=this.value; renderComparacao(); });
+  document.getElementById("scoreInfoBtn").addEventListener("click",function(e){
+    e.stopPropagation();
+    document.getElementById("scoreTooltip").classList.toggle("visible");
+  });
+  document.addEventListener("click",function(e){
+    var tooltip=document.getElementById("scoreTooltip");
+    if(tooltip&&!tooltip.contains(e.target)&&e.target.id!=="scoreInfoBtn") tooltip.classList.remove("visible");
+    var el=e.target.closest("[data-closer]");
+    if(el){ var cn=el.getAttribute("data-closer"); if(cn) showCloserEvol(cn); }
+  });
+  document.querySelectorAll(".nav-tab").forEach(function(tab){
+    tab.addEventListener("click",function(){
+      var t=this.getAttribute("data-tab");
+      document.querySelectorAll(".nav-tab").forEach(function(x){x.classList.remove("active");});
+      document.querySelectorAll(".tab-content").forEach(function(x){x.classList.remove("active");});
+      this.classList.add("active");
+      document.getElementById("tab-"+t).classList.add("active");
+      if(t==="squads") renderSquads();
+      if(t==="premios") renderPremios();
+      if(t==="evolucao") renderEvolucao();
+      if(t==="comparar") renderComparacao();
+    });
+  });
+});
+function populateEvolCloserSel(){
+  var sel=document.getElementById("evolCloserSel"); sel.innerHTML="";
+  var names=DATA_TRIMESTRE.map(function(d){return d.name;});
+  if(state.user&&state.user.role==="closer") names=names.filter(function(n){return n===state.user.name;});
+  else if(state.user&&state.user.role==="supervisor") names=names.filter(function(n){
+    var u=USERS.find(function(u){return u.name===n;}); return u&&u.squad===state.user.squad;
+  });
+  names.forEach(function(n){ var o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
+  state.evolCloser=names[0]||null;
+}
+function populateCompSelects(){
+  var names=DATA_TRIMESTRE.map(function(d){return d.name;});
+  if(state.user&&state.user.role==="supervisor") names=names.filter(function(n){
+    var u=USERS.find(function(u){return u.name===n;}); return u&&u.squad===state.user.squad;
+  });
+  ["compCloser1Sel","compCloser2Sel"].forEach(function(id,idx){
+    var sel=document.getElementById(id); sel.innerHTML="";
+    names.forEach(function(n){ var o=document.createElement("option"); o.value=n; o.textContent=n; sel.appendChild(o); });
+    if(idx===1&&names.length>1) sel.selectedIndex=1;
+  });
+  state.compCloser1=names[0]||null;
+  state.compCloser2=names.length>1?names[1]:null;
+}
+function toggleCompUI(){
+  var isClosers=state.compType==="closers";
+  document.getElementById("compCloser1Wrap").style.display=isClosers?"":"none";
+  document.getElementById("compCloser2Wrap").style.display=isClosers?"":"none";
+}
+function showCloserEvol(name){
+  state.evolCloser=name;
+  document.querySelectorAll(".nav-tab").forEach(function(x){x.classList.remove("active");});
+  document.querySelectorAll(".tab-content").forEach(function(x){x.classList.remove("active");});
+  document.querySelector(".nav-tab[data-tab=evolucao]").classList.add("active");
+  document.getElementById("tab-evolucao").classList.add("active");
+  var sel=document.getElementById("evolCloserSel");
+  for(var i=0;i<sel.options.length;i++){ if(sel.options[i].value===name){sel.selectedIndex=i;break;} }
+  renderEvolucao();
+}
+// ===== RANKING =====
+function getData(){
+  if(state.period==="semana") return DATA_SEMANA;
+  if(state.period==="mes") return DATA_MES[state.mes]||DATA_MES.marco;
+  return DATA_TRIMESTRE;
+}
+function getSortVal(d){ var s=state.sort;
+  if(s==="score") return calcScore(d,state.period,state.mes);
+  if(s==="metaPct") return getMetaPct(d,state.period,state.mes);
+  return d[s]||0;
+}
+function fmtVal(d){ var s=state.sort;
+  if(s==="score") return calcScore(d,state.period,state.mes)+" pts";
+  if(s==="metaPct") return fmtPct(getMetaPct(d,state.period,state.mes));
+  if(s==="vendas") return d.vendas+" vendas";
+  if(s==="rbv"||s==="caixa") return fmtBRL(d[s]);
+  if(s==="cxDia") return fmtBRL(d.cxDia)+"/dia";
+  if(s==="conv"||s==="cc") return fmtPct(d[s]);
+  if(s==="agDia") return fmtNum(d.agDia)+"/dia";
   return "";
 }
-
 function renderRanking(){
-  var data = getData();
-  if(state.user && state.user.role === "closer"){
-    data = data.filter(function(d){ return d.name === state.user.name; });
-  } else if(state.user && state.user.role === "supervisor"){
-    data = data.filter(function(d){ return d.squad === state.user.squad; });
-  } else if(state.squad !== "todos"){
-    var sqMap = {elite:"Elite",furacao:"Furação"};
-    data = data.filter(function(d){ return d.squad === sqMap[state.squad]; });
+  var data=getData();
+  if(state.user&&state.user.role==="closer") data=data.filter(function(d){return d.name===state.user.name;});
+  else if(state.user&&state.user.role==="supervisor") data=data.filter(function(d){return d.squad===state.user.squad;});
+  else if(state.squad!=="todos"){
+    var sqMap={elite:"Elite",furacao:"Furação"};
+    data=data.filter(function(d){return d.squad===sqMap[state.squad];});
   }
-  if(state.period === "trimestre" && !state.trimestreUnlocked){
-    data = [];
+  if(state.period==="trimestre"&&!state.trimestreUnlocked){ data=[]; }
+  data=data.slice().sort(function(a,b){return getSortVal(b)-getSortVal(a);});
+  var topN=state.top;
+  var podiumData=data.slice(0,Math.min(3,data.length));
+  var listData=data.slice(3,topN);
+  var html="";
+  if(state.period==="trimestre"&&!state.trimestreUnlocked){
+    html="<div style=\"text-align:center;padding:60px;color:var(--text2)\"><div style=\"font-size:48px;margin-bottom:16px\">🔒</div><div style=\"font-size:18px;margin-bottom:8px\">Ranking do Trimestre Bloqueado</div><div style=\"font-size:14px\">Apenas o Gerente pode desbloquear</div></div>";
+    document.getElementById("rankingContainer").innerHTML=html; return;
   }
-  data = data.slice().sort(function(a,b){ return getSortVal(b) - getSortVal(a); });
-  var topN = state.top;
-  var podiumData = data.slice(0, Math.min(3, data.length));
-  var listData = data.slice(3, topN);
-  var html = "";
-  if(state.period === "trimestre" && !state.trimestreUnlocked){
-    html = "<div style=\"text-align:center;padding:60px;color:var(--text2)\"><div style=\"font-size:48px;margin-bottom:16px\">🔒</div><div style=\"font-size:18px;margin-bottom:8px\">Ranking do Trimestre Bloqueado</div><div style=\"font-size:14px\">Apenas o Head pode desbloquear</div></div>";
-    document.getElementById("rankingContainer").innerHTML = html;
-    return;
-  }
-  if(podiumData.length > 0){
-    html += "<div class=\"podium\">";
-    var order = podiumData.length === 1 ? [0] : podiumData.length === 2 ? [1,0] : [1,0,2];
+  if(podiumData.length>0){
+    html+="<div class=\"podium\">";
+    var order=podiumData.length===1?[0]:podiumData.length===2?[1,0]:[1,0,2];
     order.forEach(function(idx){
-      if(idx >= podiumData.length) return;
-      var d = podiumData[idx];
-      var pos = idx + 1;
-      var pClass = "p" + pos;
-      var medal = pos===1 ? "🥇" : pos===2 ? "🥈" : "🥉";
-      var sqBg = d.squad === "Elite" ? "var(--elite-c)" : "var(--fur-c)";
-      var sqLetter = d.squad === "Elite" ? "E" : "F";
-      html += "<div class=\"podium-item\">";
-      html += "<div class=\"podium-medal\">" + medal + "</div>";
-      html += "<div class=\"podium-avatar " + pClass + "\" style=\"background:" + getAvatarBg(d.name) + "\">";
-      html += getInitials(d.name);
-      html += "<span class=\"podium-squad-badge\" style=\"background:" + sqBg + ";color:#000\">" + sqLetter + "</span>";
-      html += "</div>";
-      html += "<div class=\"podium-name\">" + d.name + "</div>";
-      html += "<div class=\"podium-val\">" + fmtVal(d) + "</div>";
-      html += "<div class=\"podium-squad\">" + d.squad + "</div>";
-      html += "<div class=\"podium-pos " + pClass + "\">" + pos + "º</div>";
-      html += "</div>";
+      if(idx>=podiumData.length) return;
+      var d=podiumData[idx]; var pos=idx+1;
+      var pClass="p"+pos;
+      var medal=pos===1?"🥇":pos===2?"🥈":"🥉";
+      var sqBg=d.squad==="Elite"?"var(--elite-c)":"var(--fur-c)";
+      html+="<div class=\"podium-item\">";
+      html+="<div class=\"podium-medal\">"+medal+"</div>";
+      html+="<div class=\"podium-avatar "+pClass+"\" style=\"background:"+getAvatarBg(d.name)+"\">";
+      html+=getInitials(d.name);
+      html+="<span class=\"podium-squad-badge\" style=\"background:"+sqBg+";color:#000\">"+(d.squad==="Elite"?"E":"F")+"</span>";
+      html+="</div>";
+      html+="<div class=\"podium-name\">"+d.name+"</div>";
+      html+="<div class=\"podium-val\">"+fmtVal(d)+"</div>";
+      html+="<div class=\"podium-squad\">"+d.squad+"</div>";
+      html+="<div class=\"podium-pos "+pClass+"\">"+pos+"º</div>";
+      html+="</div>";
     });
-    html += "</div>";
+    html+="</div>";
   }
-  html += "<div class=\"ranking-list\">";
-  listData.forEach(function(d, i){
-    var pos = i + 4;
-    var score = calcScore(d, state.period, state.mes);
-    var metaPct = getMetaPct(d, state.period, state.mes);
-    var ccAlert = d.cc < 90 ? "<span class=\"cc-alert\">⚠ CC " + fmtPct(d.cc) + "</span>" : "";
-    var metaStr = state.period !== "trimestre" ? "Meta: " + fmtPct(metaPct) : "";
-    html += "<div class=\"rank-item\" data-closer=\"" + d.name + "\">";
-    html += "<div class=\"rank-pos\">" + pos + "</div>";
-    html += "<div class=\"rank-avatar\" style=\"background:" + getAvatarBg(d.name) + "\">" + getInitials(d.name) + "</div>";
-    html += "<div class=\"rank-info\">";
-    html += "<div class=\"rank-name\">" + d.name + "</div>";
-    html += "<div class=\"rank-badges\"><span class=\"squad-badge " + getSquadClass(d.squad) + "\">" + d.squad + "</span>" + ccAlert + (metaStr ? "<span style=\"font-size:11px;color:var(--text2)\">" + metaStr + "</span>" : "") + "</div>";
-    html += "<div class=\"rank-meta-bar\"><div class=\"rank-meta-fill\" style=\"width:" + Math.min(metaPct,100) + "%\"></div></div>";
-    html += "</div>";
-    html += "<div class=\"rank-stats\">";
-    html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + d.vendas + "</div><div class=\"rank-stat-lbl\">Vendas</div></div>";
-    html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + fmtBRL(d.cxDia) + "</div><div class=\"rank-stat-lbl\">Cx/Dia</div></div>";
-    html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + fmtPct(d.conv) + "</div><div class=\"rank-stat-lbl\">Conv.</div></div>";
-    html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + fmtPct(metaPct) + "</div><div class=\"rank-stat-lbl\">% Meta</div></div>";
-    html += "<div class=\"score-badge\">" + score + "</div>";
-    html += "</div></div>";
+  html+="<div class=\"ranking-list\">";
+  listData.forEach(function(d,i){
+    var pos=i+4;
+    var score=calcScore(d,state.period,state.mes);
+    var metaPct=getMetaPct(d,state.period,state.mes);
+    var ccAlert=d.cc<90?"<span class=\"cc-alert\">⚠ CC "+fmtPct(d.cc)+"</span>":"";
+    var metaStr=state.period!=="trimestre"?"Meta: "+fmtPct(metaPct):"";
+    html+="<div class=\"rank-item\" data-closer=\""+d.name+"\">";
+    html+="<div class=\"rank-pos\">"+pos+"</div>";
+    html+="<div class=\"rank-avatar\" style=\"background:"+getAvatarBg(d.name)+"\">"+ getInitials(d.name)+"</div>";
+    html+="<div class=\"rank-info\">";
+    html+="<div class=\"rank-name\">"+d.name+"</div>";
+    html+="<div class=\"rank-badges\"><span class=\"squad-badge "+getSquadClass(d.squad)+"\">"+d.squad+"</span>"+ccAlert+(metaStr?"<span style=\"font-size:11px;color:var(--text2)\">"+metaStr+"</span>":"")+"</div>";
+    html+="<div class=\"rank-meta-bar\"><div class=\"rank-meta-fill\" style=\"width:"+Math.min(metaPct,100)+"%\"></div></div>";
+    html+="</div><div class=\"rank-stats\">";
+    html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+d.vendas+"</div><div class=\"rank-stat-lbl\">Vendas</div></div>";
+    html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+fmtBRL(d.cxDia)+"</div><div class=\"rank-stat-lbl\">Cx/Dia</div></div>";
+    html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+fmtPct(d.conv)+"</div><div class=\"rank-stat-lbl\">Conv.</div></div>";
+    html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+fmtPct(metaPct)+"</div><div class=\"rank-stat-lbl\">% Meta</div></div>";
+    html+="<div class=\"score-badge\">"+score+"</div>";
+    html+="</div></div>";
   });
-  html += "</div>";
-  document.getElementById("rankingContainer").innerHTML = html;
+  html+="</div>";
+  document.getElementById("rankingContainer").innerHTML=html;
 }
-
-// ==================== PREMIOS ====================
-var ELIGIBLE_TRIMESTRE = ["Denise","Nayara","Lucas","Igor","Cibeli","Leandro","Wesley","Flávia","Natalya","Ester","Evandro"];
-
+// ===== PREMIOS =====
+var ELIGIBLE_TRIM=["Denise","Nayara","Lucas","Igor","Cibeli","Leandro","Wesley","Flávia","Natalya","Ester","Evandro"];
 function renderPremios(){
-  var html = "";
-  html += "<div class=\"premios-section\">";
-  html += "<div class=\"premios-title\">🥇 Closer do Trimestre</div>";
-  if(!state.trimestreUnlocked){
-    html += "<div class=\"trimestre-lock\">";
-    html += "<div class=\"trimestre-lock-icon\">🔒</div>";
-    html += "<div class=\"trimestre-lock-text\">Premiação bloqueada</div>";
-    html += "<div style=\"font-size:13px;color:var(--text2)\">Aguardando liberação do Head Comercial</div>";
-    html += "</div>";
+  var html="";
+  // --- Closer da Semana ---
+  html+="<div class=\"premios-section\">";
+  html+="<div class=\"premios-title\">⚡ Closer da Semana</div>";
+  // Elegivel Semana: todos participam (squads desde 01/02; o premio começa na semana 2 de fev)
+  var semanasDisp=DATA_SEMANAS_HIST.filter(function(s){return s.data&&s.data.length>0;});
+  if(semanasDisp.length===0){
+    html+="<div class=\"trimestre-lock\" style=\"padding:24px\"><div style=\"font-size:32px;margin-bottom:8px\">📅</div><div style=\"font-size:14px;color:var(--text2)\">Dados das semanas anteriores serão exibidos aqui conforme forem lançados na planilha.</div></div>";
   } else {
-    var eligible = DATA_TRIMESTRE.filter(function(d){ return ELIGIBLE_TRIMESTRE.indexOf(d.name) !== -1; });
-    eligible.sort(function(a,b){ return b.cxDia - a.cxDia; });
-    var winner = eligible[0];
-    html += "<div class=\"winner-card\">";
-    html += "<div class=\"winner-trophy\">🏆</div>";
-    html += "<div style=\"font-size:14px;color:var(--text2);margin-bottom:8px\">Closer do Trimestre Jan-Mar 2025</div>";
-    html += "<div class=\"winner-name\">" + winner.name + "</div>";
-    html += "<div class=\"winner-val\">" + fmtBRL(winner.cxDia) + "/dia</div>";
-    html += "<div class=\"winner-squad\">" + winner.squad + "</div>";
-    html += "</div>";
-    html += "<div style=\"margin-top:24px\">";
-    html += "<div style=\"font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text2)\">Elegíveis (iniciaram ≤ Jan/2025)</div>";
-    eligible.forEach(function(d, i){
-      html += "<div class=\"rank-item\" data-closer=\"" + d.name + "\">";
-      html += "<div class=\"rank-pos\">" + (i+1) + "</div>";
-      html += "<div class=\"rank-avatar\" style=\"background:" + getAvatarBg(d.name) + "\">" + getInitials(d.name) + "</div>";
-      html += "<div class=\"rank-info\"><div class=\"rank-name\">" + d.name + "</div>";
-      html += "<div class=\"rank-badges\"><span class=\"squad-badge " + getSquadClass(d.squad) + "\">" + d.squad + "</span></div></div>";
-      html += "<div class=\"rank-stats\">";
-      html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + fmtBRL(d.cxDia) + "</div><div class=\"rank-stat-lbl\">Cx/Dia</div></div>";
-      html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + d.vendas + "</div><div class=\"rank-stat-lbl\">Vendas</div></div>";
-      html += "<div class=\"rank-stat\"><div class=\"rank-stat-val\">" + fmtBRL(d.rbv) + "</div><div class=\"rank-stat-lbl\">RBV</div></div>";
-      html += "</div></div>";
+    semanasDisp.forEach(function(semana){
+      var sorted=semana.data.slice().sort(function(a,b){return b.cxDia-a.cxDia;});
+      var winner=sorted[0];
+      html+="<div style=\"margin-bottom:20px\"><div style=\"font-size:13px;font-weight:600;color:var(--text2);margin-bottom:10px;padding:4px 0\">"+semana.label+"</div>";
+      html+="<div class=\"winner-card\" style=\"padding:20px;max-width:360px\">";
+      html+="<div style=\"font-size:40px;margin-bottom:8px\">⚡</div>";
+      html+="<div class=\"winner-name\">"+winner.name+"</div>";
+      html+="<div class=\"winner-val\">"+fmtBRL(winner.cxDia)+"/dia</div>";
+      html+="<div class=\"winner-squad\">"+winner.squad+"</div>";
+      html+="</div></div>";
     });
-    html += "</div>";
   }
-  html += "</div>";
-  document.getElementById("premiosContainer").innerHTML = html;
+  html+="</div>";
+  // --- Closer do Trimestre ---
+  html+="<div class=\"premios-section\">";
+  html+="<div class=\"premios-title\">🥇 Closer do Trimestre</div>";
+  if(!state.trimestreUnlocked){
+    html+="<div class=\"trimestre-lock\">";
+    html+="<div class=\"trimestre-lock-icon\">🔒</div>";
+    html+="<div class=\"trimestre-lock-text\">Premiação bloqueada</div>";
+    html+="<div style=\"font-size:13px;color:var(--text2)\">Aguardando liberação do Gerente Comercial</div>";
+    html+="</div>";
+  } else {
+    var eligible=DATA_TRIMESTRE.filter(function(d){return ELIGIBLE_TRIM.indexOf(d.name)!==-1;});
+    eligible.sort(function(a,b){return b.cxDia-a.cxDia;});
+    var winner=eligible[0];
+    html+="<div class=\"winner-card\">";
+    html+="<div class=\"winner-trophy\">🏆</div>";
+    html+="<div style=\"font-size:14px;color:var(--text2);margin-bottom:8px\">Closer do Trimestre Jan-Mar 2025</div>";
+    html+="<div class=\"winner-name\">"+winner.name+"</div>";
+    html+="<div class=\"winner-val\">"+fmtBRL(winner.cxDia)+"/dia</div>";
+    html+="<div class=\"winner-squad\">"+winner.squad+"</div></div>";
+    html+="<div style=\"margin-top:24px\">";
+    html+="<div style=\"font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text2)\">Elegíveis (iniciaram ≤ Jan/2025)</div>";
+    eligible.forEach(function(d,i){
+      html+="<div class=\"rank-item\" data-closer=\""+d.name+"\">";
+      html+="<div class=\"rank-pos\">"+(i+1)+"</div>";
+      html+="<div class=\"rank-avatar\" style=\"background:"+getAvatarBg(d.name)+"\">"+ getInitials(d.name)+"</div>";
+      html+="<div class=\"rank-info\"><div class=\"rank-name\">"+d.name+"</div>";
+      html+="<div class=\"rank-badges\"><span class=\"squad-badge "+getSquadClass(d.squad)+"\">"+d.squad+"</span></div></div>";
+      html+="<div class=\"rank-stats\">";
+      html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+fmtBRL(d.cxDia)+"</div><div class=\"rank-stat-lbl\">Cx/Dia</div></div>";
+      html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+d.vendas+"</div><div class=\"rank-stat-lbl\">Vendas</div></div>";
+      html+="<div class=\"rank-stat\"><div class=\"rank-stat-val\">"+fmtBRL(d.rbv)+"</div><div class=\"rank-stat-lbl\">RBV</div></div>";
+      html+="</div></div>";
+    });
+    html+="</div>";
+  }
+  html+="</div>";
+  document.getElementById("premiosContainer").innerHTML=html;
 }
-
-// ==================== EVOLUCAO ====================
+// ===== EVOLUCAO =====
+function getEvolData(name,period){
+  if(period==="semanal"){
+    // Retorna dados de todas as semanas disponíveis para o closer
+    var result=[];
+    DATA_SEMANAS_HIST.forEach(function(s){
+      var d=s.data.find(function(x){return x.name===name;});
+      if(d) result.push({label:s.label.split("(")[0].trim(),data:d});
+    });
+    return result;
+  }
+  if(period==="mensal"){
+    var res=[];
+    var dm=DATA_MES.marco.find(function(x){return x.name===name;});
+    if(dm) res.push({label:"Março",data:dm});
+    var da=DATA_MES.abril.find(function(x){return x.name===name;});
+    if(da) res.push({label:"Abril S1",data:da});
+    return res;
+  }
+  // trimestral
+  var dt=DATA_TRIMESTRE.find(function(x){return x.name===name;});
+  return dt?[{label:"Jan-Mar (Trim.)",data:dt}]:[];
+}
 function renderEvolucao(){
   if(!state.evolCloser) return;
-  var name = state.evolCloser;
-  var closer = null;
-  for(var i=0;i<DATA_TRIMESTRE.length;i++){ if(DATA_TRIMESTRE[i].name === name){ closer = DATA_TRIMESTRE[i]; break; } }
+  var name=state.evolCloser;
+  var closer=DATA_TRIMESTRE.find(function(d){return d.name===name;})||DATA_SEMANA.find(function(d){return d.name===name;});
   if(!closer) return;
-  var marcoDat = null;
-  for(var j=0;j<DATA_MES.marco.length;j++){ if(DATA_MES.marco[j].name === name){ marcoDat = DATA_MES.marco[j]; break; } }
-  var abrilDat = null;
-  for(var k=0;k<DATA_SEMANA.length;k++){ if(DATA_SEMANA[k].name === name){ abrilDat = DATA_SEMANA[k]; break; } }
-  var sqColor = getSquadColor(closer.squad);
-  var html = "";
-  html += "<div class=\"closer-profile\">";
-  html += "<div class=\"closer-avatar-lg\" style=\"background:" + getAvatarBg(name) + "\">" + getInitials(name) + "</div>";
-  html += "<div class=\"closer-profile-info\"><div class=\"closer-profile-name\">" + name + "</div>";
-  html += "<div class=\"rank-badges\" style=\"margin-top:6px\"><span class=\"squad-badge " + getSquadClass(closer.squad) + "\">" + closer.squad + "</span></div></div>";
-  html += "</div>";
-  var labels, cxDiaData, vendasData, convData, ccData, agDiaData, rbvData;
-  if(state.evolPeriod === "mensal"){
-    labels = ["Março","Abril S1"];
-    cxDiaData = [marcoDat ? marcoDat.cxDia : 0, abrilDat ? abrilDat.cxDia : 0];
-    vendasData = [marcoDat ? marcoDat.vendas : 0, abrilDat ? abrilDat.vendas : 0];
-    convData = [marcoDat ? marcoDat.conv : 0, abrilDat ? abrilDat.conv : 0];
-    ccData = [marcoDat ? marcoDat.cc : 0, abrilDat ? abrilDat.cc : 0];
-    agDiaData = [marcoDat ? marcoDat.agDia : 0, abrilDat ? abrilDat.agDia : 0];
-    rbvData = [marcoDat ? marcoDat.rbv : 0, abrilDat ? abrilDat.rbv : 0];
-  } else {
-    labels = ["Jan-Mar (Trim.)"];
-    cxDiaData = [closer.cxDia];
-    vendasData = [closer.vendas];
-    convData = [closer.conv];
-    ccData = [closer.cc];
-    agDiaData = [closer.agDia];
-    rbvData = [closer.rbv];
+  var evolPoints=getEvolData(name,state.evolPeriod);
+  var html="";
+  html+="<div class=\"closer-profile\">";
+  html+="<div class=\"closer-avatar-lg\" style=\"background:"+getAvatarBg(name)+"\">"+ getInitials(name)+"</div>";
+  html+="<div class=\"closer-profile-info\"><div class=\"closer-profile-name\">"+name+"</div>";
+  html+="<div class=\"rank-badges\" style=\"margin-top:6px\"><span class=\"squad-badge "+getSquadClass(closer.squad)+"\">"+closer.squad+"</span></div></div>";
+  html+="</div>";
+  if(evolPoints.length===0){
+    html+="<div style=\"text-align:center;padding:40px;color:var(--text2)\">Sem dados para o período selecionado</div>";
+    document.getElementById("evolContainer").innerHTML=html; return;
   }
-  var charts = [
-    {id:"chartCxDia",title:"Caixa/Dia Útil",data:cxDiaData,color:"#3b82f6",fmt:function(v){return fmtBRL(v);}},
-    {id:"chartVendas",title:"Vendas",data:vendasData,color:"#10b981",fmt:function(v){return v;}},
-    {id:"chartRBV",title:"RBV (R$)",data:rbvData,color:"#8b5cf6",fmt:function(v){return fmtBRL(v);}},
-    {id:"chartConv",title:"Conversão %",data:convData,color:"#f59e0b",fmt:function(v){return fmtPct(v);}},
-    {id:"chartCC",title:"Cash Collect %",data:ccData,color:"#ec4899",fmt:function(v){return fmtPct(v);}},
-    {id:"chartAgDia",title:"Agendas/Dia",data:agDiaData,color:"#06b6d4",fmt:function(v){return fmtNum(v);}}
+  var labels=evolPoints.map(function(p){return p.label;});
+  var chartDefs=[
+    {id:"eCxDia",title:"Caixa/Dia Útil",key:"cxDia",color:"#3b82f6",fmt:fmtBRL},
+    {id:"eVendas",title:"Vendas",key:"vendas",color:"#10b981",fmt:function(v){return v;}},
+    {id:"eRBV",title:"RBV",key:"rbv",color:"#8b5cf6",fmt:fmtBRL},
+    {id:"eConv",title:"Conversão %",key:"conv",color:"#f59e0b",fmt:fmtPct},
+    {id:"eCC",title:"Cash Collect %",key:"cc",color:"#ec4899",fmt:fmtPct},
+    {id:"eAgDia",title:"Agendas/Dia",key:"agDia",color:"#06b6d4",fmt:fmtNum}
   ];
-  html += "<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:20px\">";
-  charts.forEach(function(c){
-    html += "<div class=\"chart-container\"><div class=\"chart-title\">📊 " + c.title + "</div><canvas id=\"" + c.id + "_" + name.replace(/s/g,"_") + "\"></canvas></div>";
+  var suffix="_"+name.replace(/\s/g,"_")+"_"+state.evolPeriod;
+  html+="<div style=\"display:grid;grid-template-columns:1fr 1fr;gap:20px\">";
+  chartDefs.forEach(function(c){
+    html+="<div class=\"chart-container\"><div class=\"chart-title\">📊 "+c.title+"</div><canvas id=\""+c.id+suffix+"\"></canvas></div>";
   });
-  html += "</div>";
-  document.getElementById("evolContainer").innerHTML = html;
-  charts.forEach(function(c){
-    var canvasId = c.id + "_" + name.replace(/s/g,"_");
-    var ctx = document.getElementById(canvasId);
-    if(!ctx) return;
-    if(state.charts[canvasId]) { try{ state.charts[canvasId].destroy(); }catch(e){} }
-    state.charts[canvasId] = new Chart(ctx, {
-      type: "bar",
-      data: { labels: labels, datasets: [{ label: c.title, data: c.data, backgroundColor: c.color + "99", borderColor: c.color, borderWidth:2, borderRadius:6 }] },
-      options: {
-        responsive: true,
-        plugins: { legend:{display:false}, tooltip:{ callbacks:{ label:function(ctx){ return c.fmt(ctx.raw); } } } },
-        scales: {
-          x: { ticks:{color:"#94a3b8"}, grid:{color:"#1f2937"} },
-          y: { ticks:{color:"#94a3b8",callback:function(v){ return c.fmt(v); }}, grid:{color:"#1f2937"} }
+  html+="</div>";
+  document.getElementById("evolContainer").innerHTML=html;
+  chartDefs.forEach(function(c){
+    var cid=c.id+suffix;
+    var ctx=document.getElementById(cid); if(!ctx) return;
+    if(state.charts[cid]){try{state.charts[cid].destroy();}catch(e){}}
+    var vals=evolPoints.map(function(p){return p.data[c.key]||0;});
+    var chartType=state.evolPeriod==="semanal"&&evolPoints.length>1?"line":"bar";
+    state.charts[cid]=new Chart(ctx,{
+      type:chartType,
+      data:{labels:labels,datasets:[{label:c.title,data:vals,
+        backgroundColor:c.color+"99",borderColor:c.color,borderWidth:2,
+        borderRadius:chartType==="bar"?6:0,
+        pointBackgroundColor:c.color,pointRadius:5,tension:0.3
+      }]},
+      options:{responsive:true,
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:function(ctx){return c.fmt(ctx.raw);}}}},
+        scales:{
+          x:{ticks:{color:"#94a3b8"},grid:{color:"#1f2937"}},
+          y:{ticks:{color:"#94a3b8",callback:function(v){return c.fmt(v);}},grid:{color:"#1f2937"}}
         }
       }
     });
   });
 }
-
-// ==================== SQUADS ====================
+// ===== SQUADS =====
 function renderSquads(){
-  var eliteClosers = DATA_TRIMESTRE.filter(function(d){ return d.squad === "Elite"; });
-  var furacaoClosers = DATA_TRIMESTRE.filter(function(d){ return d.squad === "Furação"; });
-  function squadAvg(arr, key){ return arr.reduce(function(s,d){ return s+d[key]; },0) / arr.length; }
-  function squadSum(arr, key){ return arr.reduce(function(s,d){ return s+d[key]; },0); }
-  var html = "";
-  html += "<div class=\"squads-grid\">";
-  [{label:"Elite",closers:eliteClosers,color:"var(--elite-c)"},{label:"Furação",closers:furacaoClosers,color:"var(--fur-c)"}].forEach(function(sq){
-    var avg = function(key){ return squadAvg(sq.closers, key); };
-    var sum = function(key){ return squadSum(sq.closers, key); };
-    html += "<div class=\"squad-card\">";
-    html += "<div class=\"squad-card-title\" style=\"color:" + sq.color + "\">⚡ Squad " + sq.label + "</div>";
-    html += "<div class=\"squad-stat-grid\">";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\" style=\"color:" + sq.color + "\">" + fmtBRL(avg("cxDia")) + "</div><div class=\"squad-stat-lbl\">Cx/Dia Médio</div></div>";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\">" + sum("vendas") + "</div><div class=\"squad-stat-lbl\">Vendas Total</div></div>";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\">" + fmtPct(avg("conv")) + "</div><div class=\"squad-stat-lbl\">Conv. Média</div></div>";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\">" + fmtBRL(sum("rbv")) + "</div><div class=\"squad-stat-lbl\">RBV Total</div></div>";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\">" + fmtPct(avg("cc")) + "</div><div class=\"squad-stat-lbl\">CC Médio</div></div>";
-    html += "<div class=\"squad-stat\"><div class=\"squad-stat-val\">" + fmtNum(avg("agDia")) + "</div><div class=\"squad-stat-lbl\">Ag/Dia Médio</div></div>";
-    html += "</div>";
-    html += "<div class=\"closer-list\">";
-    var sorted = sq.closers.slice().sort(function(a,b){ return b.cxDia - a.cxDia; });
+  var rawData=getSquadData(state.squadPeriod);
+  var note="";
+  if(state.squadPeriod==="trimestre"){
+    note="<div style=\"font-size:12px;color:var(--text2);margin-bottom:12px;padding:8px 12px;background:var(--s2);border-radius:8px\">ℹ️ Os squads Elite e Furação foram criados em 01/02/2025. O trimestre inclui Janeiro, quando todos atuavam como Time Comercial Konklui.</div>";
+  }
+  var eliteD=rawData.filter(function(d){return d.squad==="Elite";});
+  var furacaoD=rawData.filter(function(d){return d.squad==="Furação";});
+  function avg(arr,k){if(!arr.length)return 0;return arr.reduce(function(s,d){return s+(d[k]||0);},0)/arr.length;}
+  function sum(arr,k){return arr.reduce(function(s,d){return s+(d[k]||0);},0);}
+  var indic=state.squadIndic;
+  var html=note+"<div class=\"squads-grid\">";
+  [{label:"Elite",d:eliteD,color:"var(--elite-c)"},{label:"Furação",d:furacaoD,color:"var(--fur-c)"}].forEach(function(sq){
+    html+="<div class=\"squad-card\">";
+    html+="<div class=\"squad-card-title\" style=\"color:"+sq.color+"\">⚡ Squad "+sq.label+"</div>";
+    html+="<div class=\"squad-stat-grid\">";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\" style=\"color:"+sq.color+"\">"+fmtBRL(avg(sq.d,"cxDia"))+"</div><div class=\"squad-stat-lbl\">Cx/Dia Médio</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+sum(sq.d,"vendas")+"</div><div class=\"squad-stat-lbl\">Vendas Total</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtPct(avg(sq.d,"conv"))+"</div><div class=\"squad-stat-lbl\">Conv. Média</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtBRL(sum(sq.d,"rbv"))+"</div><div class=\"squad-stat-lbl\">RBV Total</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtPct(avg(sq.d,"cc"))+"</div><div class=\"squad-stat-lbl\">CC Médio</div></div>";
+    html+="<div class=\"squad-stat\"><div class=\"squad-stat-val\">"+fmtNum(avg(sq.d,"agDia"))+"</div><div class=\"squad-stat-lbl\">Ag/Dia Médio</div></div>";
+    html+="</div>";
+    html+="<div class=\"closer-list\">";
+    var sorted=sq.d.slice().sort(function(a,b){return (b[indic]||0)-(a[indic]||0);});
     sorted.forEach(function(d){
-      html += "<div class=\"closer-item\" data-closer=\"" + d.name + "\">";
-      html += "<div class=\"closer-item-avatar\" style=\"background:" + getAvatarBg(d.name) + "\">" + getInitials(d.name) + "</div>";
-      html += "<div class=\"closer-item-name\">" + d.name + "</div>";
-      html += "<div class=\"closer-item-val\">" + fmtBRL(d.cxDia) + "/dia</div>";
-      html += "</div>";
+      html+="<div class=\"closer-item\" data-closer=\""+d.name+"\">";
+      html+="<div class=\"closer-item-avatar\" style=\"background:"+getAvatarBg(d.name)+"\">"+ getInitials(d.name)+"</div>";
+      html+="<div class=\"closer-item-name\">"+d.name+"</div>";
+      html+="<div class=\"closer-item-val\">"+fmtIndicVal(d[indic]||0,indic)+"</div>";
+      html+="</div>";
     });
-    html += "</div></div>";
+    html+="</div></div>";
   });
-  html += "</div>";
-  html += "<div class=\"squads-grid\">";
-  [{label:"Elite",closers:eliteClosers,color:"var(--elite-c)"},{label:"Furação",closers:furacaoClosers,color:"var(--fur-c)"}].forEach(function(sq){
-    html += "<div class=\"chart-container\">";
-    html += "<div class=\"chart-title\" style=\"color:" + sq.color + "\">Evolução - Squad " + sq.label + " (Trim.)</div>";
-    html += "<canvas id=\"squadChart" + sq.label.replace(/ç/g,"c") + "\"></canvas>";
-    html += "</div>";
+  html+="</div><div class=\"squads-grid\">";
+  [{label:"Elite",d:eliteD,color:"#818cf8"},{label:"Furação",d:furacaoD,color:"#34d399"}].forEach(function(sq){
+    var cid="sqChart"+sq.label.replace(/ç/g,"c")+"_"+state.squadPeriod+"_"+indic;
+    html+="<div class=\"chart-container\">";
+    html+="<div class=\"chart-title\" style=\"color:"+sq.color+"\">Squad "+sq.label+" – "+indicLabel(indic)+"</div>";
+    html+="<canvas id=\""+cid+"\"></canvas>";
+    html+="</div>";
   });
-  html += "</div>";
-  document.getElementById("squadsContainer").innerHTML = html;
+  html+="</div>";
+  document.getElementById("squadsContainer").innerHTML=html;
   setTimeout(function(){
-    [{label:"Elite",closers:eliteClosers,color:"#818cf8"},{label:"Furação",closers:furacaoClosers,color:"#34d399"}].forEach(function(sq){
-      var canvasId = "squadChart" + sq.label.replace(/ç/g,"c");
-      var ctx = document.getElementById(canvasId);
-      if(!ctx) return;
-      if(state.charts[canvasId]) { try{ state.charts[canvasId].destroy(); }catch(e){} }
-      var sorted = sq.closers.slice().sort(function(a,b){ return b.cxDia - a.cxDia; });
-      var names2 = sorted.map(function(d){ return d.name; });
-      var vals = sorted.map(function(d){ return d.cxDia; });
-      state.charts[canvasId] = new Chart(ctx, {
-        type: "bar",
-        data: { labels: names2, datasets: [{ label: "Caixa/Dia (R$)", data: vals, backgroundColor: sq.color + "99", borderColor: sq.color, borderWidth:2, borderRadius:6 }] },
-        options: {
-          responsive: true,
-          plugins: { legend:{display:false} },
-          scales: {
-            x: { ticks:{color:"#94a3b8"}, grid:{color:"#1f2937"} },
-            y: { ticks:{color:"#94a3b8",callback:function(v){ return fmtBRL(v); }}, grid:{color:"#1f2937"} }
+    [{label:"Elite",d:eliteD,color:"#818cf8"},{label:"Furação",d:furacaoD,color:"#34d399"}].forEach(function(sq){
+      var cid="sqChart"+sq.label.replace(/ç/g,"c")+"_"+state.squadPeriod+"_"+indic;
+      var ctx=document.getElementById(cid); if(!ctx) return;
+      if(state.charts[cid]){try{state.charts[cid].destroy();}catch(e){}}
+      var sorted=sq.d.slice().sort(function(a,b){return (b[indic]||0)-(a[indic]||0);});
+      state.charts[cid]=new Chart(ctx,{
+        type:"bar",
+        data:{labels:sorted.map(function(d){return d.name;}),
+          datasets:[{label:indicLabel(indic),data:sorted.map(function(d){return d[indic]||0;}),
+            backgroundColor:sq.color+"99",borderColor:sq.color,borderWidth:2,borderRadius:6
+          }]},
+        options:{responsive:true,plugins:{legend:{display:false},
+          tooltip:{callbacks:{label:function(ctx){return fmtIndicVal(ctx.raw,indic);}}}},
+          scales:{
+            x:{ticks:{color:"#94a3b8"},grid:{color:"#1f2937"}},
+            y:{ticks:{color:"#94a3b8",callback:function(v){return fmtIndicVal(v,indic);}},grid:{color:"#1f2937"}}
           }
         }
       });
     });
-  }, 100);
+  },100);
+}
+// ===== COMPARACAO =====
+function getDataByPeriod(period){
+  if(period==="semana") return DATA_SEMANA;
+  if(period==="marco") return DATA_MES.marco;
+  if(period==="abril") return DATA_MES.abril;
+  return DATA_TRIMESTRE;
+}
+function renderComparacao(){
+  var html="";
+  var data=getDataByPeriod(state.compPeriod);
+  if(state.compType==="squads"){
+    var eD=data.filter(function(d){return d.squad==="Elite";});
+    var fD=data.filter(function(d){return d.squad==="Furação";});
+    var metrics=[
+      {key:"cxDia",label:"Caixa/Dia Útil",fmt:fmtBRL,avg:true},
+      {key:"vendas",label:"Vendas",fmt:function(v){return Math.round(v);},avg:false},
+      {key:"rbv",label:"RBV Total",fmt:fmtBRL,avg:false},
+      {key:"conv",label:"Conversão %",fmt:fmtPct,avg:true},
+      {key:"cc",label:"Cash Collect %",fmt:fmtPct,avg:true},
+      {key:"agDia",label:"Agendas/Dia",fmt:fmtNum,avg:true}
+    ];
+    function calcMetric(arr,m){
+      if(m.avg) return arr.reduce(function(s,d){return s+(d[m.key]||0);},0)/arr.length;
+      return arr.reduce(function(s,d){return s+(d[m.key]||0);},0);
+    }
+    html+="<div class=\"comp-container\">";
+    [{label:"Elite",d:eD,color:"var(--elite-c)"},{label:"Furação",d:fD,color:"var(--fur-c)"}].forEach(function(sq){
+      html+="<div class=\"comp-card\">";
+      html+="<div class=\"comp-header\"><div class=\"comp-avatar\" style=\"background:"+sq.color+";color:#000;font-size:14px;font-weight:800\">"+sq.label.substring(0,1)+"</div><div><div class=\"comp-name\">Squad "+sq.label+"</div><div style=\"font-size:12px;color:var(--text2)\">"+sq.d.length+" closers</div></div></div>";
+      metrics.forEach(function(m){
+        var valE=calcMetric(eD,m); var valF=calcMetric(fD,m);
+        var myVal=(sq.label==="Elite")?valE:valF;
+        var otherVal=(sq.label==="Elite")?valF:valE;
+        var cls=myVal>otherVal?"comp-winner":myVal<otherVal?"comp-loser":"comp-equal";
+        html+="<div class=\"comp-stat-row\">";
+        html+="<span class=\"comp-stat-label\">"+m.label+"</span>";
+        html+="<span class=\"comp-stat-val "+cls+"\">"+m.fmt(myVal)+"</span>";
+        html+="</div>";
+      });
+      html+="</div>";
+    });
+    html+="</div>";
+  } else {
+    var n1=state.compCloser1; var n2=state.compCloser2;
+    if(!n1||!n2){ html="<div style=\"padding:24px;color:var(--text2)\">Selecione dois closers para comparar.</div>"; document.getElementById("comparacaoContainer").innerHTML=html; return; }
+    var d1=data.find(function(d){return d.name===n1;}); var d2=data.find(function(d){return d.name===n2;});
+    if(!d1||!d2){ html="<div style=\"padding:24px;color:var(--text2)\">Dados não disponíveis para o período.</div>"; document.getElementById("comparacaoContainer").innerHTML=html; return; }
+    var metrics2=[
+      {key:"cxDia",label:"Caixa/Dia Útil",fmt:fmtBRL},
+      {key:"vendas",label:"Vendas",fmt:function(v){return v;}},
+      {key:"rbv",label:"RBV",fmt:fmtBRL},
+      {key:"conv",label:"Conversão %",fmt:fmtPct},
+      {key:"cc",label:"Cash Collect %",fmt:fmtPct},
+      {key:"agDia",label:"Agendas/Dia",fmt:fmtNum},
+      {key:"score",label:"Score",fmt:function(v){return Math.round(v)+" pts";}}
+    ];
+    html+="<div class=\"comp-container\">";
+    [d1,d2].forEach(function(d){
+      html+="<div class=\"comp-card\">";
+      html+="<div class=\"comp-header\"><div class=\"comp-avatar\" style=\"background:"+getAvatarBg(d.name)+"\">"+ getInitials(d.name)+"</div><div><div class=\"comp-name\">"+d.name+"</div><div style=\"font-size:12px\"><span class=\"squad-badge "+getSquadClass(d.squad)+"\">"+d.squad+"</span></div></div></div>";
+      metrics2.forEach(function(m){
+        var v1=m.key==="score"?calcScore(d1,state.compPeriod==="trimestre"?"trimestre":state.compPeriod==="marco"?"mes":"mes",state.compPeriod==="marco"?"marco":"abril"):d1[m.key]||0;
+        var v2=m.key==="score"?calcScore(d2,state.compPeriod==="trimestre"?"trimestre":state.compPeriod==="marco"?"mes":"mes",state.compPeriod==="marco"?"marco":"abril"):d2[m.key]||0;
+        var myVal=(d===d1)?v1:v2;
+        var otherVal=(d===d1)?v2:v1;
+        var cls=myVal>otherVal?"comp-winner":myVal<otherVal?"comp-loser":"comp-equal";
+        html+="<div class=\"comp-stat-row\">";
+        html+="<span class=\"comp-stat-label\">"+m.label+"</span>";
+        html+="<span class=\"comp-stat-val "+cls+"\">"+m.fmt(myVal)+"</span>";
+        html+="</div>";
+      });
+      html+="</div>";
+    });
+    html+="</div>";
+    // radar chart comparison
+    var compChartId="compRadar_"+n1.replace(/\s/g,"_")+"_"+n2.replace(/\s/g,"_")+"_"+state.compPeriod;
+    html+="<div class=\"chart-container\" style=\"max-width:500px;margin:20px auto\">";
+    html+="<div class=\"chart-title\">📊 Comparativo Visual</div>";
+    html+="<canvas id=\""+compChartId+"\"></canvas></div>";
+  }
+  document.getElementById("comparacaoContainer").innerHTML=html;
+  if(state.compType==="closers"&&state.compCloser1&&state.compCloser2){
+    var data2=getDataByPeriod(state.compPeriod);
+    var dd1=data2.find(function(d){return d.name===state.compCloser1;});
+    var dd2=data2.find(function(d){return d.name===state.compCloser2;});
+    if(dd1&&dd2){
+      var cid2="compRadar_"+state.compCloser1.replace(/\s/g,"_")+"_"+state.compCloser2.replace(/\s/g,"_")+"_"+state.compPeriod;
+      var ctx2=document.getElementById(cid2);
+      if(ctx2){
+        if(state.charts[cid2]){try{state.charts[cid2].destroy();}catch(e){}}
+        var prd=state.compPeriod==="trimestre"?"trimestre":state.compPeriod==="marco"?"mes":"mes";
+        var mes2=state.compPeriod==="marco"?"marco":"abril";
+        state.charts[cid2]=new Chart(ctx2,{
+          type:"radar",
+          data:{labels:["Ag/Dia","% Meta","Cx/Dia","Conversão","CC"],
+            datasets:[
+              {label:dd1.name,data:[
+                Math.min(dd1.agDia/12*100,100),
+                Math.min(getMetaPct(dd1,prd,mes2),100),
+                Math.min(dd1.cxDia/10000*100,100),
+                Math.min(dd1.conv/40*100,100),
+                Math.min(dd1.cc,100)
+              ],backgroundColor:getAvatarBg(dd1.name)+"44",borderColor:getAvatarBg(dd1.name),borderWidth:2,pointBackgroundColor:getAvatarBg(dd1.name)},
+              {label:dd2.name,data:[
+                Math.min(dd2.agDia/12*100,100),
+                Math.min(getMetaPct(dd2,prd,mes2),100),
+                Math.min(dd2.cxDia/10000*100,100),
+                Math.min(dd2.conv/40*100,100),
+                Math.min(dd2.cc,100)
+              ],backgroundColor:getAvatarBg(dd2.name)+"44",borderColor:getAvatarBg(dd2.name),borderWidth:2,pointBackgroundColor:getAvatarBg(dd2.name)}
+            ]},
+          options:{responsive:true,
+            scales:{r:{ticks:{color:"#94a3b8",backdropColor:"transparent"},grid:{color:"#374151"},angleLines:{color:"#374151"},pointLabels:{color:"#94a3b8"}}},
+            plugins:{legend:{labels:{color:"#e2e8f0"}}}
+          }
+        });
+      }
+    }
+  }
 }
 </script>
 </body>
-  </html>
+                                                                                                                                           </html>
