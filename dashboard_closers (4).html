@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🏆 Dashboard Closers — Konclui</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0e1a;--surface:#111827;--s2:#1f2937;--s3:#27364d;--gold:#f59e0b;--silver:#94a3b8;--bronze:#cd7c2f;--elite-c:#818cf8;--fur-c:#34d399;--text:#f1f5f9;--muted:#64748b;--accent:#3b82f6;--danger:#ef4444;--success:#10b981;--warn:#f59e0b}
+body{background:var(--bg);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;background:radial-gradient(ellipse at center,#1a1f35 0%,#0a0e1a 70%)}
+.login-card{background:var(--surface);border:1px solid #2d3748;border-radius:20px;padding:48px 40px;width:420px;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,.5)}
+.login-logo{font-size:56px;margin-bottom:12px}
+.login-title{font-size:26px;font-weight:800;margin-bottom:6px;background:linear-gradient(135deg,#f59e0b,#3b82f6);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.login-subtitle{color:var(--muted);font-size:13px;margin-bottom:32px}
+.login-form{display:flex;flex-direction:column;gap:14px}
+.login-form input{background:var(--s2);border:1px solid #374151;border-radius:10px;padding:14px 16px;color:var(--text);font-size:15px;outline:none;transition:border-color .2s}
+.login-form input:focus{border-color:var(--accent)}
+.login-form input::placeholder{color:var(--muted)}
+.btn-login{background:linear-gradient(135deg,#3b82f6,#6366f1);border:none;border-radius:10px;padding:14px;color:#fff;font-size:16px;font-weight:700;cursor:pointer;transition:transform .1s,box-shadow .2s}
+.btn-login:hover{transform:translateY(-2px);box-shadow:0 8px 25px rgba(59,130,246,.4)}
+.error-msg{color:var(--danger);font-size:13px;margin-top:4px;display:none}
+.dashboard{display:none;min-height:100vh}
+.header{background:var(--surface);border-bottom:1px solid #1a2235;padding:14px 28px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.header-brand{display:flex;align-items:center;gap:12px}
+.header-logo{font-size:26px}
+.header-title{font-size:18px;font-weight:800}
+.header-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.user-chip{background:var(--s2);border-radius:10px;padding:8px 14px}
+.user-role{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.user-name{font-size:13px;font-weight:700}
+.btn-out{background:transparent;border:1px solid #374151;border-radius:8px;padding:7px 14px;color:var(--muted);cursor:pointer;font-size:12px;transition:all .2s}
+.btn-out:hover{border-color:var(--danger);color:var(--danger)}
+.btn-toggle{background:var(--s2);border:1px solid #374151;border-radius:8px;padding:7px 14px;color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s;display:none}
+.btn-toggle.active{border-color:var(--success);color:var(--success)}
+.btn-toggle.locked{border-color:var(--warn);color:var(--warn)}
+.content{padding:24px 28px;max-width:1400px;margin:0 auto}
+.tabs{display:flex;gap:6px;margin-bottom:22px;background:var(--surface);border-radius:12px;padding:5px;width:fit-content}
+.tab{padding:9px 22px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;color:var(--muted);transition:all .2s;border:none;background:transparent}
+.tab.active{background:var(--accent);color:#fff;box-shadow:0 4px 12px rgba(59,130,246,.3)}
+.section{display:none}
+.section.active{display:block}
+.filters{display:flex;gap:10px;margin-bottom:20px;flex-wrap:wrap;align-items:center}
+.filter-label{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.fgroup{display:flex;gap:6px;flex-wrap:wrap}
+.fbtn{padding:7px 16px;border-radius:8px;border:1px solid #374151;background:var(--s2);color:var(--text);cursor:pointer;font-size:12px;font-weight:600;transition:all .2s}
+.fbtn.active{border-color:var(--accent);background:rgba(59,130,246,.15);color:var(--accent)}
+.sfilter{background:var(--s2);border:1px solid #374151;border-radius:8px;padding:7px 12px;color:var(--text);font-size:12px;outline:none;cursor:pointer}
+.rank-header{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:24px;flex-wrap:wrap;gap:12px}
+.rank-title{font-size:20px;font-weight:800}
+.rank-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.podium{display:flex;justify-content:center;align-items:flex-end;gap:14px;margin-bottom:32px;padding:16px 0}
+.pod-wrap{display:flex;flex-direction:column;align-items:center;gap:6px;cursor:pointer;transition:transform .2s}
+.pod-wrap:hover{transform:translateY(-5px)}
+.pod-avatar{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;border:3px solid transparent}
+.pod-avatar.p1{width:76px;height:76px;border-color:var(--gold);background:linear-gradient(135deg,#78350f,#d97706);font-size:24px;box-shadow:0 0 28px rgba(245,158,11,.35)}
+.pod-avatar.p2{width:60px;height:60px;border-color:var(--silver);background:linear-gradient(135deg,#334155,#64748b);font-size:18px}
+.pod-avatar.p3{width:60px;height:60px;border-color:var(--bronze);background:linear-gradient(135deg,#451a03,#92400e);font-size:18px}
+.pod-crown{font-size:22px;line-height:1}
+.pod-base{border-radius:10px 10px 0 0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
+.pod-base.p1{width:136px;height:110px;background:linear-gradient(180deg,rgba(245,158,11,.18),rgba(245,158,11,.04));border:1px solid rgba(245,158,11,.35);border-bottom:none}
+.pod-base.p2{width:116px;height:84px;background:linear-gradient(180deg,rgba(148,163,184,.12),rgba(148,163,184,.02));border:1px solid rgba(148,163,184,.25);border-bottom:none}
+.pod-base.p3{width:116px;height:66px;background:linear-gradient(180deg,rgba(205,124,47,.12),rgba(205,124,47,.02));border:1px solid rgba(205,124,47,.25);border-bottom:none}
+.pod-pos{font-size:26px;font-weight:900;line-height:1}
+.pod-name{font-size:12px;font-weight:700;text-align:center;padding:0 6px}
+.pod-score{font-size:18px;font-weight:800}
+.pod-val-small{font-size:11px;color:var(--muted);text-align:center}
+.squad-badge{font-size:10px;padding:2px 7px;border-radius:20px;font-weight:700;border:1px solid}
+.badge-elite{background:rgba(99,102,241,.15);color:var(--elite-c);border-color:rgba(99,102,241,.3)}
+.badge-fur{background:rgba(16,185,129,.15);color:var(--fur-c);border-color:rgba(16,185,129,.3)}
+.rank-list{display:flex;flex-direction:column;gap:7px}
+.rank-item{background:var(--surface);border:1px solid #1a2235;border-radius:13px;padding:13px 16px;display:flex;align-items:center;gap:12px;transition:all .2s;cursor:pointer;position:relative}
+.rank-item:hover{border-color:#374151;transform:translateX(4px);box-shadow:0 4px 18px rgba(0,0,0,.4)}
+.rank-item.alert-cc{border-color:rgba(239,68,68,.3)}
+.r-pos{font-size:17px;font-weight:800;width:32px;text-align:center;color:var(--muted);flex-shrink:0}
+.r-pos.t1{color:var(--gold)}.r-pos.t2{color:var(--silver)}.r-pos.t3{color:var(--bronze)}
+.r-avatar{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;position:relative}
+.cc-alert{position:absolute;top:-3px;right:-3px;width:14px;height:14px;background:var(--danger);border-radius:50%;border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;font-size:8px}
+.r-info{min-width:110px}
+.r-name{font-size:14px;font-weight:700}
+.r-squad{font-size:10px;margin-top:1px}
+.r-squad.elite{color:var(--elite-c)}.r-squad.fur{color:var(--fur-c)}
+.r-score-wrap{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.r-score-label{font-size:10px;color:var(--muted)}
+.r-score-bar-track{background:#1a2235;border-radius:4px;height:8px;overflow:hidden}
+.r-score-bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.r-score-val{font-size:18px;font-weight:800}
+.r-bar-wrap{flex:1;min-width:90px}
+.r-bar-lbl{font-size:10px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:3px}
+.r-bar-track{background:#1a2235;border-radius:4px;height:6px;overflow:hidden}
+.r-bar-fill{height:100%;border-radius:4px;transition:width 1s cubic-bezier(.4,0,.2,1)}
+.r-metrics{display:flex;gap:14px;flex-shrink:0}
+.r-metric{text-align:right}
+.r-mv{font-size:13px;font-weight:700}
+.r-ml{font-size:9px;color:var(--muted)}
+.meta-badge{font-size:10px;padding:2px 7px;border-radius:6px;font-weight:700}
+.meta-ok{background:rgba(16,185,129,.15);color:var(--success);border:1px solid rgba(16,185,129,.3)}
+.meta-nok{background:rgba(239,68,68,.15);color:var(--danger);border:1px solid rgba(239,68,68,.3)}
+.ineligible-badge{font-size:9px;padding:1px 6px;border-radius:4px;background:rgba(100,116,139,.15);color:var(--muted);border:1px solid rgba(100,116,139,.2);margin-left:4px}
+.locked-section{background:linear-gradient(135deg,rgba(245,158,11,.08),rgba(245,158,11,.02));border:1px dashed rgba(245,158,11,.3);border-radius:16px;padding:40px;text-align:center}
+.locked-icon{font-size:48px;margin-bottom:12px}
+.locked-title{font-size:18px;font-weight:700;color:var(--warn)}
+.locked-sub{font-size:13px;color:var(--muted);margin-top:6px}
+.charts-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:24px}
+.chart-card{background:var(--surface);border:1px solid #1a2235;border-radius:14px;padding:20px}
+.chart-full{grid-column:1/-1}
+.chart-title{font-size:13px;font-weight:700;margin-bottom:16px}
+.stats-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat-card{background:var(--surface);border:1px solid #1a2235;border-radius:11px;padding:16px}
+.stat-card.hl{border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.04)}
+.stat-val{font-size:22px;font-weight:800}
+.stat-lbl{font-size:10px;color:var(--muted);margin-top:2px}
+.score-breakdown{display:flex;flex-direction:column;gap:8px;margin-top:16px}
+.score-row{display:flex;align-items:center;gap:10px}
+.score-row-label{font-size:12px;color:var(--muted);width:160px;flex-shrink:0}
+.score-row-bar{flex:1;background:#1a2235;border-radius:4px;height:8px;overflow:hidden}
+.score-row-fill{height:100%;border-radius:4px;transition:width .8s}
+.score-row-val{font-size:12px;font-weight:700;width:40px;text-align:right;flex-shrink:0}
+.squad-section{margin-bottom:28px}
+.squad-title{font-size:17px;font-weight:800;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.divider{height:1px;background:#1a2235;margin:20px 0}
+.meta-progress{margin-top:10px}
+.meta-progress-lbl{font-size:11px;color:var(--muted);display:flex;justify-content:space-between;margin-bottom:4px}
+.meta-progress-track{background:#1a2235;border-radius:6px;height:10px;overflow:hidden}
+.meta-progress-fill{height:100%;border-radius:6px;transition:width .8s}
+.premio-banner{background:linear-gradient(135deg,rgba(245,158,11,.15),rgba(245,158,11,.03));border:1px solid rgba(245,158,11,.3);border-radius:14px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:14px}
+.premio-icon{font-size:32px}
+.premio-title{font-size:14px;font-weight:800;color:var(--gold)}
+.premio-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.no-data{text-align:center;padding:50px;color:var(--muted);font-size:14px}
+@media(max-width:768px){.content{padding:14px}.charts-grid{grid-template-columns:1fr}.r-metrics{display:none}.r-bar-wrap{display:none}.r-score-wrap{display:none}.podium{gap:6px}}
+</style>
+</head><body>
+<div class="login-screen" id="loginScreen">
+<div class="login-card">
+  <div class="login-logo">🏆</div>
+  <div class="login-title">Dashboard Closers</div>
+  <div class="login-subtitle">Konclui — Entre com seu código de acesso</div>
+  <div class="login-form">
+    <input type="text" id="loginUser" placeholder="Código de acesso" autocomplete="off"/>
+    <input type="password" id="loginPass" placeholder="Senha" autocomplete="off"/>
+    <button class="btn-login" onclick="doLogin()">Entrar</button>
+    <div class="error-msg" id="errMsg">Código ou senha incorretos</div>
+  </div>
+</div>
+</div>
+
+<div class="dashboard" id="dashboard">
+<div class="header">
+  <div class="header-brand">
+    <span class="header-logo">🏆</span>
+    <div><div class="header-title">Dashboard Closers</div><div class="header-sub">Konclui</div></div>
+  </div>
+  <div class="header-right">
+    <button class="btn-toggle" id="btnToggleTrimestre" onclick="toggleTrimestreRanking()">🔒 Ranking Trimestre</button>
+    <div class="user-chip">
+      <div class="user-role" id="userRoleLabel">-</div>
+      <div class="user-name" id="userNameLabel">-</div>
+    </div>
+    <button class="btn-out" onclick="doLogout()">Sair</button>
+  </div>
+</div>
+<div class="content">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('ranking',this)">🏅 Ranking</button>
+    <button class="tab" onclick="showTab('evolucao',this)" id="tabEvolucao">📈 Evolução</button>
+    <button class="tab" onclick="showTab('squad',this)" id="tabSquad">👥 Squad</button>
+    <button class="tab" onclick="showTab('premios',this)">🥇 Premiações</button>
+  </div>
+
+  <!-- RANKING -->
+  <div class="section active" id="sec-ranking">
+    <div class="filters">
+      <span class="filter-label">Período:</span>
+      <div class="fgroup" id="periodFilter">
+        <button class="fbtn active" onclick="setPeriod('semana',this)">Semana</button>
+        <button class="fbtn" onclick="setPeriod('mes',this)">Mês</button>
+        <button class="fbtn" onclick="setPeriod('trimestre',this)">Trimestre</button>
+      </div>
+      <div id="semanaFilterWrap" style="display:flex;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Semana:</span>
+        <select class="sfilter" id="semanaFilter" onchange="renderRanking()"></select>
+      </div>
+      <div id="mesFilterWrap" style="display:none;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Mês:</span>
+        <select class="sfilter" id="mesFilter" onchange="renderRanking()"></select>
+      </div>
+      <div id="trimestreFilterWrap" style="display:none;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Trimestre:</span>
+        <select class="sfilter" id="trimestreFilter" onchange="renderRanking()"></select>
+      </div>
+    </div>
+    <div class="rank-header">
+      <div>
+        <div class="rank-title" id="rankingTitle">🏆 Ranking — Score de Performance</div>
+        <div class="rank-sub" id="rankingSub"></div>
+      </div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="filter-label">Ordenar por:</span>
+          <select class="sfilter" id="sortMetric" onchange="renderRanking()">
+            <option value="score">⭐ Score Geral</option>
+            <option value="vendas">Vendas</option>
+            <option value="rbv">RBV (R$)</option>
+            <option value="conversao">Conversão %</option>
+            <option value="caixa">Caixa (R$)</option>
+            <option value="caixaDiaUtil">Caixa / Dia Útil</option>
+            <option value="cashcollect">Cash Collect %</option>
+            <option value="agendasDia">Agendas/Dia</option>
+          </select>
+        </div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span class="filter-label">Top:</span>
+          <select class="sfilter" id="topCount" onchange="renderRanking()">
+            <option value="3">Top 3</option>
+            <option value="5" selected>Top 5</option>
+            <option value="8">Top 8</option>
+            <option value="10">Top 10</option>
+            <option value="99">Todos</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="rankingContainer"></div>
+  </div>
+
+  <!-- EVOLUÇÃO -->
+  <div class="section" id="sec-evolucao">
+    <div class="filters">
+      <span class="filter-label">Closer:</span>
+      <select class="sfilter" id="closerSelect" onchange="renderEvolucao()" style="font-size:13px;padding:8px 12px"></select>
+      <span class="filter-label" style="margin-left:8px">Dados:</span>
+      <div class="fgroup" id="granuFilter">
+        <button class="fbtn active" onclick="setGranu('semana',this)">Semanal</button>
+        <button class="fbtn" onclick="setGranu('mes',this)">Mensal</button>
+      </div>
+    </div>
+    <div class="stats-row" id="evolStats"></div>
+    <div id="scoreBreakdownWrap"></div>
+    <div class="charts-grid" id="evolCharts"></div>
+  </div>
+
+  <!-- SQUAD -->
+  <div class="section" id="sec-squad">
+    <div class="filters">
+      <span class="filter-label">Período:</span>
+      <div class="fgroup" id="squadPeriodFilter">
+        <button class="fbtn active" onclick="setSquadPeriod('semana',this)">Semana</button>
+        <button class="fbtn" onclick="setSquadPeriod('mes',this)">Mês</button>
+        <button class="fbtn" onclick="setSquadPeriod('trimestre',this)">Trimestre</button>
+      </div>
+      <div id="squadSemanaWrap" style="display:flex;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Semana:</span>
+        <select class="sfilter" id="squadSemanaFilter" onchange="renderSquad()"></select>
+      </div>
+      <div id="squadMesWrap" style="display:none;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Mês:</span>
+        <select class="sfilter" id="squadMesFilter" onchange="renderSquad()"></select>
+      </div>
+      <div id="squadTriWrap" style="display:none;align-items:center;gap:8px;margin-left:8px">
+        <span class="filter-label">Trimestre:</span>
+        <select class="sfilter" id="squadTriFilter" onchange="renderSquad()"></select>
+      </div>
+    </div>
+    <div id="squadContainer"></div>
+  </div>
+
+  <!-- PREMIAÇÕES -->
+  <div class="section" id="sec-premios">
+    <div id="premiosContainer"></div>
+  </div>
+</div>
+</div><script>
+// ============================================================
+// USERS
+// ============================================================
+const USERS = {
+  'talles':    { pass:'!4q!KgxMr', role:'head',       name:'Talles',         squad:null },
+  'erick':     { pass:'pXhtbVBde', role:'head',       name:'Erick Heslan',   squad:null },
+  'max':       { pass:'FXn4vv4fX', role:'head',       name:'Max Barbosa',    squad:null },
+  'douglas':   { pass:'h@TwafJdY', role:'head',       name:'Douglas Batista',squad:null },
+  'sup_elite': { pass:'6C8VDj@qc', role:'supervisor', name:'Isabella (Sup Elite)',  squad:'Elite' },
+  'sup_furacao':{ pass:'Yhjjxq#ub',role:'supervisor', name:'Denis (Sup Furacão)',   squad:'Furacão' },
+  'bruno':     { pass:'KM!VQWnq9', role:'closer',     name:'Bruno',          squad:'Elite' },
+  'cibeli':    { pass:'KxGr3CJuQ', role:'closer',     name:'Cibeli',         squad:'Elite' },
+  'david':     { pass:'bJGXqyubd', role:'closer',     name:'David',          squad:'Elite' },
+  'ester':     { pass:'C@6skfyQU', role:'closer',     name:'Ester',          squad:'Elite' },
+  'evandro':   { pass:'gtTJvUP!Y', role:'closer',     name:'Evandro',        squad:'Elite' },
+  'fernanda':  { pass:'KeY48ahWE', role:'closer',     name:'Fernanda',       squad:'Elite' },
+  'leandro':   { pass:'bv@jHPKvV', role:'closer',     name:'Leandro',        squad:'Elite' },
+  'natalya':   { pass:'!mECr@w#n', role:'closer',     name:'Natalya',        squad:'Elite' },
+  'lucas':     { pass:'rxnRnb4UF', role:'closer',     name:'Lucas',          squad:'Furacão' },
+  'igor':      { pass:'hfwNHWv@V', role:'closer',     name:'Igor',           squad:'Furacão' },
+  'nayara':    { pass:'9Hcbzf3NR', role:'closer',     name:'Nayara',         squad:'Furacão' },
+  'wesley':    { pass:'ppVzXQ4c8', role:'closer',     name:'Wesley',         squad:'Furacão' },
+  'valmor':    { pass:'Bp#Db3fgW', role:'closer',     name:'Valmor',         squad:'Furacão' },
+  'gabriel':   { pass:'#veRrKwaV', role:'closer',     name:'Gabriel',        squad:'Furacão' },
+  'flavia':    { pass:'HVGyrahaB', role:'closer',     name:'Flávia',         squad:'Furacão' },
+  'denise':    { pass:'5k8YtQKqM', role:'closer',     name:'Denise',         squad:'Furacão' },
+};
+
+// ============================================================
+// DATAS DE INÍCIO (operacional como closer)
+// ============================================================
+const INICIO_CLOSER = {
+  'Denise':   '2025-01-01','Nayara':'2025-01-01','Lucas': '2025-01-01','Igor':  '2025-01-01',
+  'Cibeli':   '2025-01-22','Leandro':'2025-01-22',
+  'Wesley':   '2025-01-29','Flávia':'2025-01-29','Natalya':'2025-01-29','Ester':'2025-01-29','Evandro':'2025-01-29',
+  'David':    '2025-02-05','Bruno':'2025-02-05',
+  'Gabriel':  '2025-02-12',
+  'Valmor':   '2025-02-24','Fernanda':'2025-02-24',
+};
+
+// ============================================================
+// METAS (RBV mensal por closer)
+// ============================================================
+const METAS = {
+  'Março': {
+    closers: {
+      'Wesley':96328,'Flávia':96328,'Nayara':124295,'Denise':124295,'Lucas':132581,
+      'Igor':124295,'Valmor':74577,'Gabriel':74577,'Bruno':88560,'Cibeli':96328,
+      'David':88560,'Ester':96328,'Evandro':96328,'Fernanda':74577,'Leandro':96328,'Natalya':102750,
+    },
+    supervisores: { 'Elite': 16055, 'Furacão': 16055 }
+  },
+  'Abril': {
+    closers: {
+      'Wesley':116640,'Flávia':116640,'Nayara':116640,'Denise':116640,'Lucas':116640,
+      'Igor':116640,'Valmor':90396,'Gabriel':90396,'Bruno':104976,'Cibeli':116640,
+      'David':104976,'Ester':116640,'Fernanda':90396,'Evandro':116640,'Leandro':116640,'Natalya':116640,
+    },
+    supervisores: { 'Elite': 19440, 'Furacão': 17496 }
+  }
+};
+
+// Dias úteis por mês (total)
+const DIAS_UTEIS_MES = { 'Janeiro':0,'Fevereiro':0,'Março':22,'Abril':20 };
+
+// Semanas do ano (Qua → Ter, formato Konclui)
+const SEMANAS_DEF = {
+  'Janeiro':[
+    {sem:'Semana 1',ini:'2025-01-01',fim:'2025-01-06',du:4},
+    {sem:'Semana 2',ini:'2025-01-07',fim:'2025-01-13',du:5},
+    {sem:'Semana 3',ini:'2025-01-14',fim:'2025-01-20',du:5},
+    {sem:'Semana 4',ini:'2025-01-21',fim:'2025-01-27',du:5},
+    {sem:'Semana 5',ini:'2025-01-28',fim:'2025-01-31',du:3},
+  ],
+  'Fevereiro':[
+    {sem:'Semana 1',ini:'2025-02-01',fim:'2025-02-03',du:1},
+    {sem:'Semana 2',ini:'2025-02-04',fim:'2025-02-10',du:5},
+    {sem:'Semana 3',ini:'2025-02-11',fim:'2025-02-17',du:5},
+    {sem:'Semana 4',ini:'2025-02-18',fim:'2025-02-24',du:5},
+    {sem:'Semana 5',ini:'2025-02-25',fim:'2025-02-28',du:2},
+  ],
+  'Março':[
+    {sem:'Semana 1',ini:'2025-03-01',fim:'2025-03-03',du:1},
+    {sem:'Semana 2',ini:'2025-03-04',fim:'2025-03-10',du:5},
+    {sem:'Semana 3',ini:'2025-03-11',fim:'2025-03-17',du:5},
+    {sem:'Semana 4',ini:'2025-03-18',fim:'2025-03-24',du:5},
+    {sem:'Semana 5',ini:'2025-03-25',fim:'2025-03-31',du:5},
+  ],
+  'Abril':[
+    {sem:'Semana 1',ini:'2025-04-01',fim:'2025-04-07',du:4},
+    {sem:'Semana 2',ini:'2025-04-08',fim:'2025-04-14',du:5},
+    {sem:'Semana 3',ini:'2025-04-15',fim:'2025-04-21',du:5},
+    {sem:'Semana 4',ini:'2025-04-22',fim:'2025-04-28',du:5},
+    {sem:'Semana 5',ini:'2025-04-29',fim:'2025-04-30',du:1},
+  ],
+};
+
+// Meta semanal dinâmica: calcula meta de cada semana baseada no RBV realizado nas anteriores
+function calcMetasSemana(closer, mes, rbvPorSemana) {
+  const metaMes = METAS[mes]?.closers[closer];
+  if (!metaMes) return {};
+  const sems = SEMANAS_DEF[mes];
+  if (!sems) return {};
+  let saldoMeta = metaMes;
+  let diasRestantes = DIAS_UTEIS_MES[mes] || 22;
+  const result = {};
+  sems.forEach(s => {
+    const metaSem = diasRestantes > 0 ? (saldoMeta / diasRestantes) * s.du : 0;
+    result[s.sem] = metaSem;
+    const realizado = rbvPorSemana[s.sem] || 0;
+    saldoMeta -= realizado;
+    diasRestantes -= s.du;
+  });
+  return result;
+}
+
+// ============================================================
+// DADOS SEMANA
+// ============================================================
+const DATA_SEMANA = [
+  {mes:'Abril',semana:'Semana 1',closer:'Bruno',squad:'Elite',agendas:21,diasUteis:4,agendasDia:5.25,reunioes:6,vendas:2,conversao:33.33,rbv:12313.70,caixa:12313.70,cashCollect:100,ticketMedio:6156.85,desconto:93.70,caixaDiaUtil:586.37},
+  {mes:'Abril',semana:'Semana 1',closer:'Cibeli',squad:'Elite',agendas:24,diasUteis:4,agendasDia:6,reunioes:12,vendas:2,conversao:16.67,rbv:26211.60,caixa:26211.60,cashCollect:100,ticketMedio:13105.80,desconto:81.08,caixaDiaUtil:1092.15},
+  {mes:'Abril',semana:'Semana 1',closer:'David',squad:'Elite',agendas:26,diasUteis:4,agendasDia:6.5,reunioes:13,vendas:1,conversao:7.69,rbv:7887.00,caixa:7887.00,cashCollect:100,ticketMedio:7887.00,desconto:94.30,caixaDiaUtil:303.35},
+  {mes:'Abril',semana:'Semana 1',closer:'Ester',squad:'Elite',agendas:24,diasUteis:4,agendasDia:6,reunioes:13,vendas:4,conversao:30.77,rbv:18902.00,caixa:18902.00,cashCollect:100,ticketMedio:4725.50,desconto:83.43,caixaDiaUtil:787.58},
+  {mes:'Abril',semana:'Semana 1',closer:'Evandro',squad:'Elite',agendas:28,diasUteis:4,agendasDia:7,reunioes:13,vendas:3,conversao:23.08,rbv:18888.98,caixa:18888.98,cashCollect:100,ticketMedio:6296.33,desconto:105.57,caixaDiaUtil:674.61},
+  {mes:'Abril',semana:'Semana 1',closer:'Fernanda',squad:'Elite',agendas:31,diasUteis:4,agendasDia:7.75,reunioes:12,vendas:4,conversao:33.33,rbv:17625.00,caixa:17625.00,cashCollect:100,ticketMedio:4406.25,desconto:92.49,caixaDiaUtil:568.55},
+  {mes:'Abril',semana:'Semana 1',closer:'Leandro',squad:'Elite',agendas:27,diasUteis:4,agendasDia:6.75,reunioes:13,vendas:7,conversao:53.85,rbv:34169.40,caixa:27652.00,cashCollect:80.93,ticketMedio:4881.34,desconto:84.27,caixaDiaUtil:1024.15},
+  {mes:'Abril',semana:'Semana 1',closer:'Natalya',squad:'Elite',agendas:43,diasUteis:4,agendasDia:10.75,reunioes:24,vendas:7,conversao:29.17,rbv:45682.10,caixa:43218.00,cashCollect:94.61,ticketMedio:6526.01,desconto:95.67,caixaDiaUtil:1005.07},
+  {mes:'Abril',semana:'Semana 1',closer:'Lucas',squad:'Furacão',agendas:24,diasUteis:4,agendasDia:6,reunioes:12,vendas:3,conversao:25.00,rbv:12364.00,caixa:12064.00,cashCollect:97.57,ticketMedio:4121.33,desconto:86.51,caixaDiaUtil:502.67},
+  {mes:'Abril',semana:'Semana 1',closer:'Igor',squad:'Furacão',agendas:24,diasUteis:4,agendasDia:6,reunioes:11,vendas:2,conversao:18.18,rbv:12722.00,caixa:12058.00,cashCollect:94.78,ticketMedio:6361.00,desconto:133.52,caixaDiaUtil:502.42},
+  {mes:'Abril',semana:'Semana 1',closer:'Nayara',squad:'Furacão',agendas:23,diasUteis:4,agendasDia:5.75,reunioes:13,vendas:2,conversao:15.38,rbv:7900.00,caixa:5950.00,cashCollect:75.32,ticketMedio:3950.00,desconto:82.91,caixaDiaUtil:258.70},
+  {mes:'Abril',semana:'Semana 1',closer:'Wesley',squad:'Furacão',agendas:25,diasUteis:4,agendasDia:6.25,reunioes:9,vendas:1,conversao:11.11,rbv:3500.00,caixa:3500.00,cashCollect:100,ticketMedio:3500.00,desconto:41.85,caixaDiaUtil:140.00},
+  {mes:'Abril',semana:'Semana 1',closer:'Valmor',squad:'Furacão',agendas:31,diasUteis:4,agendasDia:7.75,reunioes:15,vendas:0,conversao:0,rbv:0,caixa:12430.00,cashCollect:100,ticketMedio:0,desconto:0,caixaDiaUtil:400.97},
+  {mes:'Abril',semana:'Semana 1',closer:'Gabriel',squad:'Furacão',agendas:21,diasUteis:4,agendasDia:5.25,reunioes:10,vendas:0,conversao:0,rbv:0,caixa:0,cashCollect:0,ticketMedio:0,desconto:0,caixaDiaUtil:0},
+  {mes:'Abril',semana:'Semana 1',closer:'Flávia',squad:'Furacão',agendas:26,diasUteis:4,agendasDia:6.5,reunioes:10,vendas:1,conversao:10.00,rbv:7109.40,caixa:7109.40,cashCollect:100,ticketMedio:7109.40,desconto:85.00,caixaDiaUtil:273.44},
+  {mes:'Abril',semana:'Semana 1',closer:'Denise',squad:'Furacão',agendas:27,diasUteis:4,agendasDia:6.75,reunioes:13,vendas:1,conversao:7.69,rbv:7312.50,caixa:7312.50,cashCollect:100,ticketMedio:7312.50,desconto:111.40,caixaDiaUtil:585.00},
+];
+const DATA_MES = [
+  {mes:'Março',closer:'Bruno',squad:'Elite',agendas:149,diasUteis:22,agendasDia:6.8,reunioes:63,vendas:14,conversao:22.22,rbv:83567.66,caixa:83567.66,cashCollect:100,ticketMedio:5969.12,desconto:87.51,caixaDiaUtil:3798.53},
+  {mes:'Março',closer:'Cibeli',squad:'Elite',agendas:134,diasUteis:22,agendasDia:6.1,reunioes:68,vendas:8,conversao:11.76,rbv:43125.60,caixa:42384.44,cashCollect:98.28,ticketMedio:5390.70,desconto:88.17,caixaDiaUtil:1926.57},
+  {mes:'Março',closer:'David',squad:'Elite',agendas:137,diasUteis:22,agendasDia:6.2,reunioes:73,vendas:14,conversao:19.18,rbv:98749.80,caixa:94870.80,cashCollect:96.07,ticketMedio:7053.56,desconto:92.90,caixaDiaUtil:4312.31},
+  {mes:'Março',closer:'Ester',squad:'Elite',agendas:165,diasUteis:22,agendasDia:7.5,reunioes:78,vendas:19,conversao:24.36,rbv:97936.00,caixa:83705.00,cashCollect:85.47,ticketMedio:5154.53,desconto:82.08,caixaDiaUtil:3804.77},
+  {mes:'Março',closer:'Evandro',squad:'Elite',agendas:150,diasUteis:22,agendasDia:6.8,reunioes:54,vendas:9,conversao:16.67,rbv:60927.60,caixa:51798.10,cashCollect:85.02,ticketMedio:6769.73,desconto:106.38,caixaDiaUtil:2354.46},
+  {mes:'Março',closer:'Fernanda',squad:'Elite',agendas:182,diasUteis:22,agendasDia:8.3,reunioes:78,vendas:19,conversao:24.36,rbv:133070.80,caixa:129306.80,cashCollect:97.17,ticketMedio:7003.73,desconto:89.84,caixaDiaUtil:5877.58},
+  {mes:'Março',closer:'Leandro',squad:'Elite',agendas:126,diasUteis:22,agendasDia:5.7,reunioes:71,vendas:17,conversao:23.94,rbv:121487.09,caixa:121487.09,cashCollect:100,ticketMedio:7146.30,desconto:84.73,caixaDiaUtil:5522.14},
+  {mes:'Março',closer:'Natalya',squad:'Elite',agendas:219,diasUteis:22,agendasDia:10.0,reunioes:106,vendas:24,conversao:22.64,rbv:190977.80,caixa:189146.80,cashCollect:99.04,ticketMedio:7957.41,desconto:97.47,caixaDiaUtil:8597.58},
+  {mes:'Março',closer:'Lucas',squad:'Furacão',agendas:127,diasUteis:22,agendasDia:5.8,reunioes:60,vendas:17,conversao:28.33,rbv:95600.00,caixa:85621.00,cashCollect:89.56,ticketMedio:5623.53,desconto:84.31,caixaDiaUtil:3891.86},
+  {mes:'Março',closer:'Igor',squad:'Furacão',agendas:112,diasUteis:22,agendasDia:5.1,reunioes:47,vendas:16,conversao:34.04,rbv:139910.50,caixa:125846.50,cashCollect:89.95,ticketMedio:8744.41,desconto:104.55,caixaDiaUtil:5720.30},
+  {mes:'Março',closer:'Nayara',squad:'Furacão',agendas:128,diasUteis:22,agendasDia:5.8,reunioes:60,vendas:15,conversao:25.00,rbv:83033.90,caixa:79688.40,cashCollect:95.97,ticketMedio:5535.59,desconto:92.82,caixaDiaUtil:3622.20},
+  {mes:'Março',closer:'Wesley',squad:'Furacão',agendas:128,diasUteis:22,agendasDia:5.8,reunioes:44,vendas:8,conversao:18.18,rbv:68505.00,caixa:68505.00,cashCollect:100,ticketMedio:8563.13,desconto:90.96,caixaDiaUtil:3113.86},
+  {mes:'Março',closer:'Valmor',squad:'Furacão',agendas:158,diasUteis:22,agendasDia:7.2,reunioes:75,vendas:15,conversao:20.00,rbv:91886.90,caixa:68895.38,cashCollect:74.98,ticketMedio:6125.79,desconto:85.51,caixaDiaUtil:3131.61},
+  {mes:'Março',closer:'Gabriel',squad:'Furacão',agendas:118,diasUteis:22,agendasDia:5.4,reunioes:47,vendas:7,conversao:14.89,rbv:50627.00,caixa:26213.20,cashCollect:51.78,ticketMedio:7232.43,desconto:114.68,caixaDiaUtil:1191.51},
+  {mes:'Março',closer:'Flávia',squad:'Furacão',agendas:139,diasUteis:22,agendasDia:6.3,reunioes:48,vendas:12,conversao:25.00,rbv:160676.70,caixa:149065.70,cashCollect:92.77,ticketMedio:13389.73,desconto:111.92,caixaDiaUtil:6775.71},
+  {mes:'Março',closer:'Denise',squad:'Furacão',agendas:0,diasUteis:22,agendasDia:0,reunioes:0,vendas:0,conversao:0,rbv:0,caixa:80344.60,cashCollect:86.34,ticketMedio:6204.07,desconto:92.82,caixaDiaUtil:3652.03},
+];
+const DATA_TRIMESTRE = [
+  {trimestre:'Janeiro-Março',closer:'Lucas',squad:'Furacão',agendas:352,diasUteis:60,agendasDia:5.87,reunioes:175,vendas:59,conversao:33.71,rbv:320222.00,caixa:274267.89,cashCollect:85.65,ticketMedio:5427.49,desconto:79.84,caixaDiaUtil:4571.13},
+  {trimestre:'Janeiro-Março',closer:'Denise',squad:'Furacão',agendas:391,diasUteis:60,agendasDia:6.52,reunioes:190,vendas:54,conversao:28.42,rbv:383711.00,caixa:352374.00,cashCollect:91.83,ticketMedio:7105.76,desconto:93.39,caixaDiaUtil:5872.90},
+  {trimestre:'Janeiro-Março',closer:'Natalya',squad:'Elite',agendas:421,diasUteis:42,agendasDia:10.02,reunioes:199,vendas:52,conversao:26.13,rbv:404142.10,caixa:387838.30,cashCollect:95.97,ticketMedio:7771.96,desconto:96.10,caixaDiaUtil:9234.25},
+  {trimestre:'Janeiro-Março',closer:'Nayara',squad:'Furacão',agendas:354,diasUteis:60,agendasDia:5.90,reunioes:156,vendas:39,conversao:25.00,rbv:220074.90,caixa:228166.00,cashCollect:103.68,ticketMedio:5642.95,desconto:85.37,caixaDiaUtil:3802.77},
+  {trimestre:'Janeiro-Março',closer:'Ester',squad:'Elite',agendas:318,diasUteis:42,agendasDia:7.57,reunioes:152,vendas:38,conversao:25.00,rbv:242313.40,caixa:220686.65,cashCollect:91.07,ticketMedio:6376.67,desconto:84.19,caixaDiaUtil:5254.44},
+  {trimestre:'Janeiro-Março',closer:'Fernanda',squad:'Elite',agendas:216,diasUteis:26,agendasDia:8.31,reunioes:88,vendas:22,conversao:25.00,rbv:157824.30,caixa:154060.30,cashCollect:97.62,ticketMedio:7173.83,desconto:91.12,caixaDiaUtil:5925.40},
+  {trimestre:'Janeiro-Março',closer:'Wesley',squad:'Furacão',agendas:260,diasUteis:42,agendasDia:6.19,reunioes:104,vendas:25,conversao:24.04,rbv:181374.60,caixa:181374.60,cashCollect:100,ticketMedio:7254.98,desconto:96.12,caixaDiaUtil:4318.44},
+  {trimestre:'Janeiro-Março',closer:'Flávia',squad:'Furacão',agendas:285,diasUteis:42,agendasDia:6.79,reunioes:119,vendas:27,conversao:22.69,rbv:262483.40,caixa:238141.40,cashCollect:90.73,ticketMedio:9721.61,desconto:104.56,caixaDiaUtil:5670.03},
+  {trimestre:'Janeiro-Março',closer:'Leandro',squad:'Elite',agendas:286,diasUteis:47,agendasDia:6.09,reunioes:144,vendas:31,conversao:21.53,rbv:191204.89,caixa:190680.06,cashCollect:99.73,ticketMedio:6167.90,desconto:93.67,caixaDiaUtil:4057.02},
+  {trimestre:'Janeiro-Março',closer:'Igor',squad:'Furacão',agendas:358,diasUteis:60,agendasDia:5.97,reunioes:158,vendas:34,conversao:21.52,rbv:307768.00,caixa:267403.00,cashCollect:86.88,ticketMedio:9052.00,desconto:108.23,caixaDiaUtil:4456.72},
+  {trimestre:'Janeiro-Março',closer:'Bruno',squad:'Elite',agendas:229,diasUteis:37,agendasDia:6.19,reunioes:89,vendas:18,conversao:20.22,rbv:114971.79,caixa:108777.79,cashCollect:94.61,ticketMedio:6387.32,desconto:91.72,caixaDiaUtil:2939.94},
+  {trimestre:'Janeiro-Março',closer:'Valmor',squad:'Furacão',agendas:215,diasUteis:26,agendasDia:8.27,reunioes:100,vendas:18,conversao:18.00,rbv:121712.40,caixa:98720.88,cashCollect:81.11,ticketMedio:6761.80,desconto:89.39,caixaDiaUtil:3796.96},
+  {trimestre:'Janeiro-Março',closer:'Cibeli',squad:'Elite',agendas:274,diasUteis:45,agendasDia:6.09,reunioes:124,vendas:21,conversao:16.94,rbv:129528.55,caixa:125287.39,cashCollect:96.73,ticketMedio:6168.03,desconto:87.49,caixaDiaUtil:2784.16},
+  {trimestre:'Janeiro-Março',closer:'David',squad:'Elite',agendas:236,diasUteis:37,agendasDia:6.38,reunioes:123,vendas:19,conversao:15.45,rbv:129278.40,caixa:113017.00,cashCollect:87.42,ticketMedio:6804.13,desconto:94.29,caixaDiaUtil:3054.51},
+  {trimestre:'Janeiro-Março',closer:'Evandro',squad:'Elite',agendas:299,diasUteis:42,agendasDia:7.12,reunioes:118,vendas:16,conversao:13.56,rbv:133587.00,caixa:124457.50,cashCollect:93.17,ticketMedio:8349.19,desconto:97.87,caixaDiaUtil:2963.27},
+  {trimestre:'Janeiro-Março',closer:'Gabriel',squad:'Furacão',agendas:0,diasUteis:0,agendasDia:0,reunioes:0,vendas:0,conversao:0,rbv:0,caixa:0,cashCollect:0,ticketMedio:0,desconto:0,caixaDiaUtil:0},
+];
+
+// ============================================================
+// STATE & AUTH
+// ============================================================
+let currentUser=null, currentPeriod='semana', currentGranu='semana', squadPeriod='semana';
+let trimestreUnlocked = false; // heads controlam via botão
+
+function doLogin(){
+  const u=document.getElementById('loginUser').value.trim().toLowerCase();
+  const p=document.getElementById('loginPass').value.trim();
+  const user=USERS[u]; const err=document.getElementById('errMsg');
+  if(!user||user.pass!==p){err.style.display='block';return;}
+  err.style.display='none';
+  currentUser={...user,code:u};
+  document.getElementById('loginScreen').style.display='none';
+  document.getElementById('dashboard').style.display='block';
+  document.getElementById('userNameLabel').textContent=user.name;
+  document.getElementById('userRoleLabel').textContent=user.role==='head'?'Head Comercial':user.role==='supervisor'?'Supervisor':'Closer';
+  document.getElementById('tabSquad').style.display=user.role==='closer'?'none':'';
+  const btn=document.getElementById('btnToggleTrimestre');
+  if(user.role==='head'){btn.style.display='flex';updateTrimestreBtn();}
+  initFilters(); renderRanking();
+}
+document.addEventListener('keydown',e=>{if(e.key==='Enter'&&document.getElementById('loginScreen').style.display!=='none')doLogin();});
+function doLogout(){
+  currentUser=null;
+  document.getElementById('loginScreen').style.display='flex';
+  document.getElementById('dashboard').style.display='none';
+  document.getElementById('loginUser').value='';
+  document.getElementById('loginPass').value='';
+}
+function toggleTrimestreRanking(){
+  trimestreUnlocked=!trimestreUnlocked;
+  updateTrimestreBtn();
+  if(currentPeriod==='trimestre')renderRanking();
+  if(document.getElementById('sec-premios').classList.contains('active'))renderPremios();
+}
+function updateTrimestreBtn(){
+  const btn=document.getElementById('btnToggleTrimestre');
+  if(trimestreUnlocked){btn.textContent='🔓 Ranking Trimestre VISÍVEL';btn.className='btn-toggle active';}
+  else{btn.textContent='🔒 Liberar Ranking Trimestre';btn.className='btn-toggle locked';}
+}
+function canSeeTrimestre(){
+  if(!currentUser)return false;
+  if(currentUser.role==='head')return true;
+  return trimestreUnlocked;
+}
+
+// ============================================================
+// FILTERS
+// ============================================================
+function initFilters(){
+  const semanas=[...new Set(DATA_SEMANA.map(d=>d.mes+'||'+d.semana))];
+  document.getElementById('semanaFilter').innerHTML=semanas.map(s=>{const[m,w]=s.split('||');return '<option value="'+s+'">'+m+' — '+w+'</option>';}).join('');
+  document.getElementById('squadSemanaFilter').innerHTML=document.getElementById('semanaFilter').innerHTML;
+  const meses=[...new Set(DATA_MES.map(d=>d.mes))];
+  document.getElementById('mesFilter').innerHTML=meses.map(m=>'<option value="'+m+'">'+m+'</option>').join('');
+  document.getElementById('squadMesFilter').innerHTML=document.getElementById('mesFilter').innerHTML;
+  const tris=[...new Set(DATA_TRIMESTRE.map(d=>d.trimestre))];
+  document.getElementById('trimestreFilter').innerHTML=tris.map(t=>'<option value="'+t+'">'+t+'</option>').join('');
+  document.getElementById('squadTriFilter').innerHTML=document.getElementById('trimestreFilter').innerHTML;
+  let closers;
+  if(currentUser.role==='closer')closers=[currentUser.name];
+  else if(currentUser.role==='supervisor')closers=[...new Set([...DATA_SEMANA,...DATA_MES].filter(d=>d.squad===currentUser.squad).map(d=>d.closer))];
+  else closers=[...new Set([...DATA_SEMANA,...DATA_MES].map(d=>d.closer))];
+  document.getElementById('closerSelect').innerHTML=closers.map(c=>'<option value="'+c+'">'+c+'</option>').join('');
+}
+
+// ============================================================
+// UTILS
+// ============================================================
+function fmtBRL(v){return 'R$ '+Number(v||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fmtPct(v){return Number(v||0).toFixed(1).replace('.',',')+' %';}
+function initials(n){return(n||'').split(' ').map(p=>p[0]).join('').toUpperCase().substring(0,2);}
+function sqClass(s){return s==='Elite'?'elite':'fur';}
+function sqBadge(s){return s==='Elite'?'badge-elite':'badge-fur';}
+function avatarBg(s){return s==='Elite'?'linear-gradient(135deg,#312e81,#6366f1)':'linear-gradient(135deg,#064e3b,#10b981)';}
+function sqColor(s){return s==='Elite'?'#818cf8':'#34d399';}
+
+// Elegibilidade trimestre: precisa ter iniciado antes do início do 2º mês completo
+function isEligibleTrimestre(closer, trimestre) {
+  const inicio = INICIO_CLOSER[closer];
+  if (!inicio) return false;
+  if (trimestre === 'Janeiro-Março') {
+    // Precisa ter iniciado até 31/01 (mes de fev e mar completos)
+    return new Date(inicio) <= new Date('2025-01-31');
+  }
+  return true;
+}
+
+// Score de Performance (0-100)
+// Pesos: Agendas/Dia 25%, %Meta RBV 25%, Caixa/Dia Útil 20%, Conversão 20%, CashCollect 10%
+function calcScore(d, allData, period) {
+  const mes = d.mes || '';
+  const metaRBV = METAS[mes]?.closers[d.closer] || 0;
+  const pctMeta = metaRBV > 0 ? Math.min((d.rbv / metaRBV) * 100, 150) : 0;
+
+  // Normaliza cada indicador vs melhor do grupo
+  const bestAgendasDia = Math.max(...allData.map(x=>x.agendasDia||0)) || 1;
+  const bestCDU = Math.max(...allData.map(x=>x.caixaDiaUtil||0)) || 1;
+  const bestConv = Math.max(...allData.map(x=>x.conversao||0)) || 1;
+  const bestCC = Math.max(...allData.map(x=>x.cashCollect||0)) || 1;
+  const bestMeta = Math.max(...allData.map(x=>{
+    const mm=METAS[x.mes||'']?.closers[x.closer]||0;
+    return mm>0?Math.min((x.rbv/mm)*100,150):0;
+  })) || 1;
+
+  const sAgendas = ((d.agendasDia||0)/bestAgendasDia)*100;
+  const sCDU = ((d.caixaDiaUtil||0)/bestCDU)*100;
+  const sConv = ((d.conversao||0)/bestConv)*100;
+  const sCC = Math.min((d.cashCollect||0)/bestCC*100,100);
+  const sMeta = (pctMeta/bestMeta)*100;
+
+  const score = sAgendas*0.25 + sMeta*0.25 + sCDU*0.20 + sConv*0.20 + sCC*0.10;
+  return { score:Math.round(score), sAgendas:Math.round(sAgendas), sMeta:Math.round(sMeta), sCDU:Math.round(sCDU), sConv:Math.round(sConv), sCC:Math.round(sCC), pctMeta:Math.round(pctMeta) };
+}
+
+const METRIC_KEYS = {
+  score:'score',vendas:'vendas',rbv:'rbv',conversao:'conversao',
+  caixa:'caixa',caixaDiaUtil:'caixaDiaUtil',cashcollect:'cashCollect',agendasDia:'agendasDia'
+};
+function getMV(d,m,scores){
+  if(m==='score')return scores[d.closer]?.score||0;
+  return d[METRIC_KEYS[m]]||0;
+}
+function fmtMV(m,v){
+  if(['rbv','caixa','caixaDiaUtil'].includes(m))return fmtBRL(v);
+  if(['conversao','cashcollect'].includes(m))return fmtPct(v);
+  if(m==='score')return v+' pts';
+  return v;
+}
+function metricLabel(m){
+  const map={score:'Score',vendas:'Vendas',rbv:'RBV',conversao:'Conversão',caixa:'Caixa',caixaDiaUtil:'Caixa/Dia Útil',cashcollect:'Cash Collect',agendasDia:'Agendas/Dia'};
+  return map[m]||m;
+}
+
+function getPeriodData(){
+  let data;
+  if(currentPeriod==='semana'){
+    const val=document.getElementById('semanaFilter').value;
+    const [mes,sem]=val.split('||');
+    data=DATA_SEMANA.filter(d=>d.mes===mes&&d.semana===sem);
+  }else if(currentPeriod==='mes'){
+    data=DATA_MES.filter(d=>d.mes===document.getElementById('mesFilter').value);
+  }else{
+    data=DATA_TRIMESTRE.filter(d=>d.trimestre===document.getElementById('trimestreFilter').value);
+  }
+  if(currentUser.role==='supervisor')data=data.filter(d=>d.squad===currentUser.squad);
+  else if(currentUser.role==='closer')data=data.filter(d=>(d.closer||'')===currentUser.name);
+  return data;
+}
+
+// ============================================================
+// RANKING
+// ============================================================
+function showTab(tab,btn){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('sec-'+tab).classList.add('active');
+  if(btn)btn.classList.add('active');
+  if(tab==='evolucao')renderEvolucao();
+  if(tab==='squad')renderSquad();
+  if(tab==='premios')renderPremios();
+}
+function setPeriod(p,btn){
+  currentPeriod=p;
+  document.querySelectorAll('#periodFilter .fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('semanaFilterWrap').style.display=p==='semana'?'flex':'none';
+  document.getElementById('mesFilterWrap').style.display=p==='mes'?'flex':'none';
+  document.getElementById('trimestreFilterWrap').style.display=p==='trimestre'?'flex':'none';
+  renderRanking();
+}
+
+function renderRanking(){
+  const metric=document.getElementById('sortMetric').value;
+  const topN=parseInt(document.getElementById('topCount').value);
+
+  // Trimestre bloqueado para closers/supervisores se não liberado
+  if(currentPeriod==='trimestre'&&!canSeeTrimestre()&&currentUser.role!=='head'){
+    document.getElementById('rankingContainer').innerHTML=`
+      <div class="locked-section">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Ranking do Trimestre ainda não divulgado</div>
+        <div class="locked-sub">O resultado será divulgado na reunião de premiação. Fique ligado!</div>
+      </div>`;
+    return;
+  }
+
+  let data=getPeriodData().filter(d=>d.vendas>0||d.rbv>0||d.reunioes>0||d.caixaDiaUtil>0);
+  const scores={};
+  data.forEach(d=>{ scores[d.closer]=calcScore(d,data,currentPeriod); });
+  data.sort((a,b)=>getMV(b,metric,scores)-getMV(a,metric,scores));
+  const maxVal=getMV(data[0]||{},metric,scores)||1;
+  const shown=topN===99?data:data.slice(0,topN);
+
+  let pLabel='';
+  if(currentPeriod==='semana'){const v=document.getElementById('semanaFilter').value;pLabel=v.replace('||',' — ');}
+  else if(currentPeriod==='mes')pLabel=document.getElementById('mesFilter').value;
+  else pLabel=document.getElementById('trimestreFilter').value;
+  document.getElementById('rankingTitle').textContent='🏆 Top '+(topN===99?data.length:Math.min(topN,data.length))+' Closers';
+  document.getElementById('rankingSub').textContent=pLabel+' · Ordenado por '+metricLabel(metric);
+  document.getElementById('rankingContainer').innerHTML=buildRankingHTML(shown,metric,maxVal,scores);
+  setTimeout(()=>{document.querySelectorAll('.r-bar-fill,.r-score-bar-fill').forEach(el=>{el.style.width=el.dataset.w+'%';});},50);
+}
+
+function buildRankingHTML(data,metric,maxVal,scores){
+  if(!data.length)return '<div class="no-data">Nenhum dado para os filtros selecionados.</div>';
+  let html='';
+  if(data.length>=2){
+    const top3=data.slice(0,Math.min(3,data.length));
+    html+='<div class="podium">';
+    const order=top3.length>=3?[top3[1],top3[0],top3[2]]:[top3[1],top3[0]];
+    const cls3=top3.length>=3?['p2','p1','p3']:['p2','p1'];
+    const crowns=top3.length>=3?['🥈','👑','🥉']:['🥈','👑'];
+    order.forEach((d,i)=>{
+      const cls=cls3[i];const name=d.closer||'';
+      const v=fmtMV(metric,getMV(d,metric,scores));
+      const sc=scores[name];
+      html+=`<div class="pod-wrap" onclick="showCloserEvol('${name}')">
+        <div class="pod-crown">${crowns[i]}</div>
+        <div class="pod-avatar ${cls}">${initials(name)}</div>
+        <div class="pod-name">${name}</div>
+        <span class="squad-badge ${sqBadge(d.squad)}">${d.squad}</span>
+        <div class="pod-base ${cls}">
+          <div class="pod-pos">${cls==='p1'?'1º':cls==='p2'?'2º':'3º'}</div>
+          <div class="pod-score">${v}</div>
+          ${metric==='score'?'<div class="pod-val-small">Score de Performance</div>':''}
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  const listData=data.length>=2?data.slice(3):data;
+  if(listData.length>0||data.length<2){
+    html+='<div class="rank-list">';
+    (data.length<2?data:listData).forEach((d,i)=>{
+      const pos=(data.length<2?i:i+3)+1;
+      const v=getMV(d,metric,scores);
+      const pct=Math.round((v/maxVal)*100);
+      const name=d.closer||'';
+      const sc=scores[name]||{};
+      const ccAlert=d.cashCollect>0&&d.cashCollect<90;
+      const pc=pos===1?'t1':pos===2?'t2':pos===3?'t3':'';
+      html+=`<div class="rank-item${ccAlert?' alert-cc':''}" onclick="showCloserEvol('${name}')">
+        <div class="r-pos ${pc}">${pos}º</div>
+        <div class="r-avatar" style="background:${avatarBg(d.squad)}">
+          ${initials(name)}
+          ${ccAlert?'<div class="cc-alert">!</div>':''}
+        </div>
+        <div class="r-info">
+          <div class="r-name">${name}</div>
+          <div class="r-squad ${sqClass(d.squad)}">${d.squad}</div>
+        </div>
+        <div class="r-score-wrap">
+          <div class="r-score-label">Score</div>
+          <div class="r-score-bar-track"><div class="r-score-bar-fill" data-w="${sc.score||0}" style="width:0%;background:linear-gradient(90deg,var(--accent),#818cf8)"></div></div>
+          <div style="font-size:11px;color:var(--muted);${sc.score>=70?'color:#34d399':sc.score>=45?'color:#f59e0b':''}">${sc.score||0} pts</div>
+        </div>
+        <div class="r-bar-wrap">
+          <div class="r-bar-lbl"><span>${metricLabel(metric)}</span><span>${fmtMV(metric,v)}</span></div>
+          <div class="r-bar-track"><div class="r-bar-fill" data-w="${pct}" style="width:0%;background:${d.squad==='Elite'?'linear-gradient(90deg,#6366f1,#818cf8)':'linear-gradient(90deg,#10b981,#34d399)'}"></div></div>
+        </div>
+        <div class="r-metrics">
+          <div class="r-metric"><div class="r-mv">${d.vendas}</div><div class="r-ml">Vendas</div></div>
+          <div class="r-metric"><div class="r-mv">${fmtBRL(d.caixaDiaUtil)}</div><div class="r-ml">Cx/Dia Útil</div></div>
+          <div class="r-metric"><div class="r-mv" style="${ccAlert?'color:var(--danger)':''}">${fmtPct(d.cashCollect)}</div><div class="r-ml">Cash Collect</div></div>
+        </div>
+      </div>`;
+    });
+    html+='</div>';
+  }
+  return html;
+}
+
+// ============================================================
+// PREMIAÇÕES
+// ============================================================
+function renderPremios(){
+  const container=document.getElementById('premiosContainer');
+  let html='<h2 style="font-size:20px;font-weight:800;margin-bottom:20px">🥇 Premiações</h2>';
+
+  // --- CLOSER DA SEMANA ---
+  html+='<h3 style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:12px">🏅 Closer da Semana</h3>';
+  const semanas=[...new Set(DATA_SEMANA.map(d=>d.mes+'||'+d.semana))];
+  semanas.forEach(sv=>{
+    const [mes,semana]=sv.split('||');
+    const semDef=SEMANAS_DEF[mes]?.find(s=>s.sem===semana);
+    const semData=DATA_SEMANA.filter(d=>d.mes===mes&&d.semana===semana&&(d.caixa>0||d.vendas>0));
+    if(!semData.length)return;
+    // Calc meta semanal dinâmica por closer
+    const candidatos=semData.map(d=>{
+      // Calculamos meta acumulada até essa semana
+      const semsDoMes=SEMANAS_DEF[mes]||[];
+      const idxAtual=semsDoMes.findIndex(s=>s.sem===semana);
+      const rbvAnteriores={};
+      semsDoMes.slice(0,idxAtual).forEach(s=>{
+        const prev=DATA_SEMANA.find(x=>x.mes===mes&&x.semana===s.sem&&x.closer===d.closer);
+        rbvAnteriores[s.sem]=prev?prev.rbv:0;
+      });
+      const metas=calcMetasSemana(d.closer,mes,rbvAnteriores);
+      const metaSem=metas[semana]||0;
+      return {...d,metaSem,bateuMeta:d.caixa>=metaSem&&metaSem>0};
+    });
+    const elegiveis=candidatos.filter(c=>c.bateuMeta).sort((a,b)=>b.caixa-a.caixa||(b.conversao-a.conversao));
+    const vencedor=elegiveis[0]||null;
+    html+=`<div class="premio-banner">
+      <div class="premio-icon">${vencedor?'🏆':'—'}</div>
+      <div>
+        <div class="premio-title">${mes} — ${semana}</div>
+        ${vencedor
+          ?'<div class="premio-sub">🥇 <b>'+vencedor.closer+'</b> ('+vencedor.squad+') — Caixa: '+fmtBRL(vencedor.caixa)+' | Meta: '+fmtBRL(vencedor.metaSem)+'</div>'
+          :'<div class="premio-sub" style="color:var(--danger)">Nenhum closer atingiu a meta de caixa nessa semana</div>'
+        }
+      </div>
+    </div>`;
+  });
+
+  // --- CLOSER DO TRIMESTRE ---
+  html+='<div class="divider"></div><h3 style="font-size:15px;font-weight:700;color:var(--gold);margin-bottom:12px">🏆 Closer do Trimestre</h3>';
+  const trimestres=[...new Set(DATA_TRIMESTRE.map(d=>d.trimestre))];
+  trimestres.forEach(tri=>{
+    const triData=DATA_TRIMESTRE.filter(d=>d.trimestre===tri&&d.caixaDiaUtil>0);
+    if(!canSeeTrimestre()&&currentUser.role!=='head'){
+      html+=`<div class="locked-section" style="margin-bottom:12px">
+        <div class="locked-icon">🔒</div>
+        <div class="locked-title">Resultado bloqueado</div>
+        <div class="locked-sub">Aguarde a divulgação oficial.</div>
+      </div>`;
+      return;
+    }
+    const elegiveis=triData.filter(d=>isEligibleTrimestre(d.closer,tri)).sort((a,b)=>b.caixaDiaUtil-a.caixaDiaUtil);
+    const inelegiveis=triData.filter(d=>!isEligibleTrimestre(d.closer,tri));
+    const vencedor=elegiveis[0]||null;
+    html+=`<div class="premio-banner" style="flex-direction:column;align-items:flex-start;gap:10px">
+      <div style="display:flex;align-items:center;gap:12px">
+        <div class="premio-icon">${vencedor?'🏆':'—'}</div>
+        <div>
+          <div class="premio-title">${tri}</div>
+          ${vencedor?'<div class="premio-sub">🥇 <b>'+vencedor.closer+'</b> ('+vencedor.squad+') — Caixa/Dia Útil: '+fmtBRL(vencedor.caixaDiaUtil)+'</div>':'<div class="premio-sub">Sem dados suficientes</div>'}
+        </div>
+      </div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:6px">ELEGÍVEIS (2 meses completos)</div>
+        <div style="display:flex;flex-wrap:wrap;gap:6px">
+          ${elegiveis.map((d,i)=>`<span class="squad-badge ${sqBadge(d.squad)}" style="font-size:11px;padding:3px 10px">${i===0?'🥇 ':i===1?'🥈 ':i===2?'🥉 ':''}${d.closer} — ${fmtBRL(d.caixaDiaUtil)}</span>`).join('')}
+        </div>
+        ${inelegiveis.length?'<div style="font-size:11px;color:var(--muted);margin-top:8px">Inelegíveis: '+inelegiveis.map(d=>`<span class="ineligible-badge">${d.closer}</span>`).join(' ')+'</div>':''}
+      </div>
+    </div>`;
+  });
+
+  // --- CLOSER DO ANO (placeholder) ---
+  html+=`<div class="divider"></div>
+  <h3 style="font-size:15px;font-weight:700;color:var(--muted);margin-bottom:12px">🌟 Closer do Ano</h3>
+  <div style="background:var(--s2);border-radius:12px;padding:20px;color:var(--muted);font-size:13px">
+    Em definição — critérios a serem divulgados em breve.
+  </div>`;
+
+  container.innerHTML=html;
+}
+
+// ============================================================
+// EVOLUÇÃO
+// ============================================================
+function setGranu(g,btn){currentGranu=g;document.querySelectorAll('#granuFilter .fbtn').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderEvolucao();}
+function showCloserEvol(name){
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-evolucao').classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>{if(t.textContent.includes('volu'))t.classList.add('active');});
+  const sel=document.getElementById('closerSelect');
+  for(let i=0;i<sel.options.length;i++){if(sel.options[i].value===name){sel.selectedIndex=i;break;}}
+  renderEvolucao();
+}
+let _ec={};
+function destroyEC(){Object.values(_ec).forEach(c=>{try{c.destroy();}catch(e){}});_ec={};}
+
+function renderEvolucao(){
+  const name=document.getElementById('closerSelect').value; if(!name)return;
+  destroyEC();
+  const sData=DATA_SEMANA.filter(d=>d.closer===name);
+  const mData=DATA_MES.filter(d=>d.closer===name);
+  const allD=[...sData,...mData];
+  const info=[...DATA_SEMANA,...DATA_MES,...DATA_TRIMESTRE].find(d=>(d.closer||'')===name);
+  const squad=info?info.squad:'';
+  const latest=mData[mData.length-1]||sData[sData.length-1]||{};
+  const metaMes=METAS[latest.mes||'']?.closers[name]||0;
+  const pctMeta=metaMes>0?Math.round((latest.rbv/metaMes)*100):0;
+  const ccAlert=latest.cashCollect>0&&latest.cashCollect<90;
+  const allForScore=currentGranu==='semana'?DATA_SEMANA.filter(d=>d.mes===latest.mes&&d.semana===latest.semana):DATA_MES.filter(d=>d.mes===latest.mes);
+  const sc=calcScore(latest,allForScore,currentGranu);
+
+  document.getElementById('evolStats').innerHTML=`
+    <div class="stat-card hl"><div class="stat-val">${sc.score} pts</div><div class="stat-lbl">⭐ Score de Performance</div></div>
+    <div class="stat-card hl"><div class="stat-val">${fmtBRL(latest.caixaDiaUtil||0)}</div><div class="stat-lbl">💰 Caixa / Dia Útil</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:var(--gold)">${latest.vendas||0}</div><div class="stat-lbl">Vendas</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#34d399">${fmtBRL(latest.rbv||0)}</div><div class="stat-lbl">RBV</div></div>
+    <div class="stat-card"><div class="stat-val;${pctMeta>=100?'color:var(--success)':'color:var(--danger)'}">${pctMeta}%</div><div class="stat-lbl">% Meta RBV (${fmtBRL(metaMes)})</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#818cf8">${fmtPct(latest.conversao||0)}</div><div class="stat-lbl">Conversão</div></div>
+    <div class="stat-card${ccAlert?' hl':''}"><div class="stat-val" style="${ccAlert?'color:var(--danger)':''}">${fmtPct(latest.cashCollect||0)}</div><div class="stat-lbl">Cash Collect${ccAlert?' ⚠️':''}</div></div>
+    <div class="stat-card"><div class="stat-val" style="color:#38bdf8">${latest.agendasDia||0}</div><div class="stat-lbl">Agendas/Dia</div></div>
+  `;
+
+  // Score breakdown
+  document.getElementById('scoreBreakdownWrap').innerHTML=`
+    <div class="chart-card" style="margin-top:0;margin-bottom:20px">
+      <div class="chart-title">⭐ Composição do Score de Performance</div>
+      <div class="score-breakdown">
+        ${[
+          {label:'Agendas/Dia (25%)',val:sc.sAgendas,color:'#3b82f6'},
+          {label:'% Meta RBV (25%)',val:sc.sMeta,color:'#f59e0b'},
+          {label:'Caixa/Dia Útil (20%)',val:sc.sCDU,color:'#34d399'},
+          {label:'Conversão % (20%)',val:sc.sConv,color:'#818cf8'},
+          {label:'Cash Collect (10%)',val:sc.sCC,color:'#f472b6'},
+        ].map(r=>`<div class="score-row">
+          <div class="score-row-label">${r.label}</div>
+          <div class="score-row-bar"><div class="score-row-fill" style="width:${r.val}%;background:${r.color}"></div></div>
+          <div class="score-row-val" style="color:${r.color}">${r.val}</div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+
+  const useData=currentGranu==='semana'?sData:mData;
+  const labels=useData.map(d=>currentGranu==='semana'?d.semana+' ('+d.mes+')':d.mes);
+  const ac=squad==='Elite'?'#818cf8':'#34d399';
+  const base={tension:0.4,fill:true,borderWidth:2,pointBackgroundColor:ac};
+
+  document.getElementById('evolCharts').innerHTML=`
+    <div class="chart-card chart-full"><div class="chart-title">⭐ Caixa / Dia Útil</div><canvas id="cCDU"></canvas></div>
+    <div class="chart-card"><div class="chart-title">📦 Vendas</div><canvas id="cV"></canvas></div>
+    <div class="chart-card"><div class="chart-title">💰 RBV vs Meta</div><canvas id="cRBV"></canvas></div>
+    <div class="chart-card"><div class="chart-title">🎯 Conversão %</div><canvas id="cConv"></canvas></div>
+    <div class="chart-card"><div class="chart-title">💵 Caixa vs RBV</div><canvas id="cCaixa"></canvas></div>
+    <div class="chart-card"><div class="chart-title">📅 Agendas/Dia</div><canvas id="cAg"></canvas></div>
+  `;
+
+  function mkC(id,type,labels,datasets,opts={}){
+    const ctx=document.getElementById(id);if(!ctx)return;
+    _ec[id]=new Chart(ctx,{type,data:{labels,datasets},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1f2937'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'#1f2937'},ticks:{color:'#64748b',font:{size:10}}}},...opts}});
+  }
+  mkC('cCDU','bar',labels,[{data:useData.map(d=>d.caixaDiaUtil),backgroundColor:useData.map(d=>sqColor(d.squad)),borderRadius:7}]);
+  mkC('cV','bar',labels,[{data:useData.map(d=>d.vendas),backgroundColor:ac,borderRadius:5}]);
+  const metasArr=useData.map(d=>{
+    const mm=METAS[d.mes||'']?.closers[d.closer]||0;
+    const semsDef=SEMANAS_DEF[d.mes]||[];
+    if(currentGranu==='semana'){
+      const idx=semsDef.findIndex(s=>s.sem===d.semana);
+      const prev={};
+      semsDef.slice(0,idx).forEach(s=>{const pd=DATA_SEMANA.find(x=>x.mes===d.mes&&x.semana===s.sem&&x.closer===d.closer);prev[s.sem]=pd?pd.rbv:0;});
+      const ms=calcMetasSemana(d.closer,d.mes,prev);
+      return ms[d.semana]||0;
+    }
+    return mm;
+  });
+  mkC('cRBV','bar',labels,[
+    {label:'RBV',data:useData.map(d=>d.rbv),backgroundColor:ac+'bb',borderRadius:4},
+    {label:'Meta',data:metasArr,type:'line',borderColor:'#f59e0b',backgroundColor:'transparent',borderWidth:2,borderDash:[5,3],pointRadius:3,fill:false,tension:0}
+  ],{plugins:{legend:{display:true,labels:{color:'#f1f5f9',font:{size:11}}}}});
+  mkC('cConv','line',labels,[{data:useData.map(d=>d.conversao),borderColor:'#f59e0b',backgroundColor:'#f59e0b15',...base,pointBackgroundColor:'#f59e0b'}]);
+  mkC('cCaixa','bar',labels,[
+    {label:'RBV',data:useData.map(d=>d.rbv),backgroundColor:'#818cf8aa',borderRadius:3},
+    {label:'Caixa',data:useData.map(d=>d.caixa),backgroundColor:'#34d399aa',borderRadius:3}
+  ],{plugins:{legend:{display:true,labels:{color:'#f1f5f9',font:{size:11}}}}});
+  mkC('cAg','line',labels,[{data:useData.map(d=>d.agendasDia),borderColor:'#38bdf8',backgroundColor:'#38bdf815',...base,pointBackgroundColor:'#38bdf8'}]);
+}
+
+// ============================================================
+// SQUAD
+// ============================================================
+function setSquadPeriod(p,btn){
+  squadPeriod=p;
+  document.querySelectorAll('#squadPeriodFilter .fbtn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('squadSemanaWrap').style.display=p==='semana'?'flex':'none';
+  document.getElementById('squadMesWrap').style.display=p==='mes'?'flex':'none';
+  document.getElementById('squadTriWrap').style.display=p==='trimestre'?'flex':'none';
+  renderSquad();
+}
+let _sc={};
+function destroySC(){Object.values(_sc).forEach(c=>{try{c.destroy();}catch(e){}});_sc={};}
+
+function renderSquad(){
+  destroySC();
+  let data;
+  if(squadPeriod==='semana'){const v=document.getElementById('squadSemanaFilter').value;const[mes,sem]=v.split('||');data=DATA_SEMANA.filter(d=>d.mes===mes&&d.semana===sem);}
+  else if(squadPeriod==='mes')data=DATA_MES.filter(d=>d.mes===document.getElementById('squadMesFilter').value);
+  else data=DATA_TRIMESTRE.filter(d=>d.trimestre===document.getElementById('squadTriFilter').value);
+  const squads=currentUser.role==='supervisor'?[currentUser.squad]:['Elite','Furacão'];
+  let html='';
+  squads.forEach(sq=>{
+    const sqD=data.filter(d=>d.squad===sq&&(d.vendas>0||d.rbv>0||d.reunioes>0||d.caixaDiaUtil>0));
+    if(!sqD.length)return;
+    const mesAtual=sqD[0]?.mes||sqD[0]?.trimestre?.split('-')[1]?.trim()||'';
+    const metaSup=METAS[mesAtual]?.supervisores?.[sq]||0;
+    const totRBV=sqD.reduce((a,d)=>a+(d.rbv||0),0);
+    const totCaixa=sqD.reduce((a,d)=>a+(d.caixa||0),0);
+    const totV=sqD.reduce((a,d)=>a+(d.vendas||0),0);
+    const avgConv=sqD.reduce((a,d)=>a+(d.conversao||0),0)/sqD.length;
+    const avgCDU=sqD.reduce((a,d)=>a+(d.caixaDiaUtil||0),0)/sqD.length;
+    const metaTotal=sqD.reduce((a,d)=>a+(METAS[d.mes||'']?.closers[d.closer]||0),0)+metaSup;
+    const pctMetaSq=metaTotal>0?Math.round((totRBV/metaTotal)*100):0;
+    const sc=sqColor(sq);
+    const cid='sq_'+sq.replace(/[^a-z]/gi,'');
+    const sqScores={};sqD.forEach(d=>{sqScores[d.closer]=calcScore(d,sqD,squadPeriod);});
+    const sorted=[...sqD].sort((a,b)=>sqScores[b.closer]?.score-sqScores[a.closer]?.score);
+    html+=`<div class="squad-section">
+      <div class="squad-title" style="color:${sc}">${sq==='Elite'?'⚡':'🌪️'} Squad ${sq}
+        <span class="squad-badge ${sqBadge(sq)}">${sqD.length} closers</span>
+        ${pctMetaSq>0?'<span class="meta-badge ${pctMetaSq>=100?"meta-ok":"meta-nok"}">${pctMetaSq}% da meta</span>':''}
+      </div>
+      <div class="stats-row">
+        <div class="stat-card hl"><div class="stat-val">${fmtBRL(avgCDU)}</div><div class="stat-lbl">⭐ Caixa/Dia Útil Médio</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:${sc}">${fmtBRL(totRBV)}</div><div class="stat-lbl">Total RBV</div></div>
+        ${metaTotal>0?`<div class="stat-card">
+          <div class="stat-val" style="color:${pctMetaSq>=100?'var(--success)':'var(--danger)'}">${pctMetaSq}%</div>
+          <div class="stat-lbl">% Meta Squad (${fmtBRL(metaTotal)})</div>
+          <div class="meta-progress"><div class="meta-progress-track"><div class="meta-progress-fill" style="width:${Math.min(pctMetaSq,100)}%;background:${pctMetaSq>=100?'var(--success)':'var(--danger)'}"></div></div></div>
+        </div>`:''}
+        <div class="stat-card"><div class="stat-val" style="color:var(--gold)">${totV}</div><div class="stat-lbl">Total Vendas</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:#38bdf8">${fmtBRL(totCaixa)}</div><div class="stat-lbl">Total Caixa</div></div>
+        <div class="stat-card"><div class="stat-val" style="color:#f59e0b">${fmtPct(avgConv)}</div><div class="stat-lbl">Conversão Média</div></div>
+      </div>
+      <div class="charts-grid">
+        <div class="chart-card"><div class="chart-title">⭐ Score por Closer</div><canvas id="${cid}_sc"></canvas></div>
+        <div class="chart-card"><div class="chart-title">💰 Caixa/Dia Útil por Closer</div><canvas id="${cid}_cdu"></canvas></div>
+      </div>
+      <div class="rank-list" style="margin-top:14px">
+        ${sorted.map((d,i)=>{
+          const name=d.closer||'';
+          const s=sqScores[name]||{};
+          const maxS=sqScores[sorted[0].closer]?.score||1;
+          const pct=Math.round((s.score||0)/maxS*100);
+          const cc=d.cashCollect>0&&d.cashCollect<90;
+          return `<div class="rank-item${cc?' alert-cc':''}" onclick="showCloserEvol('${name}')">
+            <div class="r-pos ${i===0?'t1':i===1?'t2':i===2?'t3':''}">${i+1}º</div>
+            <div class="r-avatar" style="background:${avatarBg(d.squad)}">${initials(name)}${cc?'<div class="cc-alert">!</div>':''}</div>
+            <div class="r-info"><div class="r-name">${name}</div><div class="r-squad ${sqClass(d.squad)}">${d.squad}</div></div>
+            <div class="r-score-wrap">
+              <div class="r-score-label">Score</div>
+              <div class="r-score-bar-track"><div class="r-score-bar-fill" data-w="${pct}" style="width:0%;background:linear-gradient(90deg,var(--accent),${sc})"></div></div>
+              <div style="font-size:11px">${s.score||0} pts</div>
+            </div>
+            <div class="r-bar-wrap">
+              <div class="r-bar-lbl"><span>Caixa/Dia Útil</span><span>${fmtBRL(d.caixaDiaUtil)}</span></div>
+              <div class="r-bar-track"><div class="r-bar-fill" data-w="${Math.round((d.caixaDiaUtil/(Math.max(...sorted.map(x=>x.caixaDiaUtil))||1))*100)}" style="width:0%;background:${d.squad==='Elite'?'linear-gradient(90deg,#6366f1,#818cf8)':'linear-gradient(90deg,#10b981,#34d399)'}"></div></div>
+            </div>
+            <div class="r-metrics">
+              <div class="r-metric"><div class="r-mv">${d.vendas}</div><div class="r-ml">Vendas</div></div>
+              <div class="r-metric"><div class="r-mv">${fmtBRL(d.rbv)}</div><div class="r-ml">RBV</div></div>
+              <div class="r-metric"><div class="r-mv" style="${cc?'color:var(--danger)':''}">${fmtPct(d.cashCollect)}</div><div class="r-ml">Cash Collect</div></div>
+            </div>
+          </div>`;
+        }).join('')}
+      </div>
+      <div class="divider"></div>
+    </div>`;
+    setTimeout(()=>{
+      const names=sorted.map(d=>d.closer||'');
+      function mkSq(id,type,ds){const ctx=document.getElementById(id);if(!ctx)return;_sc[id]=new Chart(ctx,{type,data:{labels:names,datasets:ds},options:{responsive:true,plugins:{legend:{display:false}},scales:{x:{grid:{color:'#1f2937'},ticks:{color:'#64748b',font:{size:10}}},y:{grid:{color:'#1f2937'},ticks:{color:'#64748b',font:{size:10}}}}}});}
+      mkSq(cid+'_sc','bar',[{data:sorted.map(d=>sqScores[d.closer]?.score||0),backgroundColor:sc+'cc',borderRadius:5}]);
+      mkSq(cid+'_cdu','bar',[{data:sorted.map(d=>d.caixaDiaUtil),backgroundColor:sc+'88',borderRadius:5}]);
+      document.querySelectorAll('.r-bar-fill,.r-score-bar-fill').forEach(el=>{el.style.width=el.dataset.w+'%';});
+    },120);
+  });
+  document.getElementById('squadContainer').innerHTML=html||'<div class="no-data">Nenhum dado disponível.</div>';
+}
+</script></body></html>
